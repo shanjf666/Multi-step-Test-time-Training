@@ -1,6 +1,6 @@
 """
 python self-eval-deepseek.py --subset_size 10 --lambda_weight 0.5 --model_path /root/autodl-tmp/data/models/modelscope_cache/models/deepseek-ai/deepseek-llm-7b-chat
-python self-eval-deepseek.py --lambda_weight 1.0 --model_path /root/autodl-tmp/data/models/modelscope_cache/models/deepseek-ai/deepseek-llm-7b-chat
+python self-eval-deepseek.py --lambda_weight 0.0 --model_path /root/autodl-tmp/data/models/modelscope_cache/models/deepseek-ai/deepseek-llm-7b-chat
 """
 # 禁用某些可能导致计算不一致的优化选项，确保结果的可重现性
 import os
@@ -316,7 +316,7 @@ def calculate_step_confidence_with_full_probs(prompt_ids, response_ids, logits, 
                 actual_token_id = response_ids[token_index + j].item()
                 # 获取实际生成的token的logprob
                 step_cumulative_logprob += log_probs[token_index + j][actual_token_id].item()
-                
+        # normalized       
         # step_cumulative_logprob /= step_length
 
         # 获取该步骤的自评分数
@@ -332,11 +332,11 @@ def calculate_step_confidence_with_full_probs(prompt_ids, response_ids, logits, 
         token_index += step_length
     
     # 所有步骤置信度的平均作为最终置信度
-    final_confidence = 1.0
+    final_confidence = 0.0
     if step_confidences:
         for conf in step_confidences:
-            final_confidence *= conf
-        # final_confidence /= len(step_confidences)
+            final_confidence += conf
+        final_confidence /= len(step_confidences)
     return final_confidence
     
 #############################################################################################################
@@ -647,7 +647,7 @@ def Self_Certainty_Selection(dataset, config: Config, model, tokenizer, device, 
     # 如果需要保存结果，则写入JSON文件
     if save_results:
         os.makedirs("./TTT_data", exist_ok=True)
-        output_file = f"./TTT_data/Best_of_{N}_Transformers_Step_Eval_lambda_{lambda_weight}_deepseek_7b_multiply.json"
+        output_file = f"./TTT_data/Best_of_{N}_Transformers_Step_Eval_lambda_{lambda_weight}_deepseek_7b_normalized.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
             json.dump(table, file, indent=4, ensure_ascii=False)
         print(f"Results saved to {output_file}")

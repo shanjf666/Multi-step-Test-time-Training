@@ -1,4 +1,3 @@
-```markdown
 # Multi-step Test-time Training with Data Selection
 
 本项目实现了多种测试时训练(Test-time Training)方法，通过生成多个候选答案并选择最优解，为后续强化学习提供高质量训练数据。

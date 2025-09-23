@@ -1,6 +1,6 @@
 """
 python self-certainty-deepseek.py --subset_size 100 --lambda_weight 0.5 --model_path /root/autodl-tmp/data/models/modelscope_cache/models/deepseek-ai/deepseek-llm-7b-chat
-python self-certainty-deepseek.py --lambda_weight 0.0 --model_path /root/autodl-tmp/data/models/modelscope_cache/models/deepseek-ai/deepseek-llm-7b-chat
+python self-certainty-deepseek.py --lambda_weight 0.5 --model_path /root/autodl-tmp/data/models/modelscope_cache/models/deepseek-ai/deepseek-llm-7b-chat
 """
 # 禁用某些可能导致计算不一致的优化选项，确保结果的可重现性
 import os
@@ -171,7 +171,7 @@ def calculate_step_confidence_with_full_probs(prompt_ids, response_ids, logits, 
         if token_confidences:
             avg_token_confidence = sum(token_confidences) / len(token_confidences)
             #  normalized
-            step_cumulative_logprob = step_cumulative_logprob/step_length
+            step_cumulative_logprob = step_cumulative_logprob / step_length
             # 将步骤概率考虑进来，使用lambda进行加权
             step_probability = np.exp(step_cumulative_logprob)
             # 结合token置信度和步骤概率
@@ -182,10 +182,10 @@ def calculate_step_confidence_with_full_probs(prompt_ids, response_ids, logits, 
         token_index += step_length
     
     # 所有步骤置信度的累乘作为最终置信度
-    final_confidence = 1.0
+    final_confidence = 0.0
     for conf in step_confidences:
-        final_confidence *= conf
-    # final_confidence /= len(step_confidences)
+        final_confidence += conf
+    final_confidence /= len(step_confidences)
     return final_confidence
 
 #############################################################################################################
