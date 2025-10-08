@@ -5,7 +5,7 @@ aiohttp==3.12.15
 aiosignal==1.4.0
 anaconda-anon-usage @ file:///croot/anaconda-anon-usage_1710965072196/work
 annotated-types==0.7.0
-antlr4-python3-runtime==4.7.2
+antlr4-python3-runtime==4.13.2
 anyio==4.6.2.post1
 archspec @ file:///croot/archspec_1709217642129/work
 argon2-cffi==23.1.0
@@ -100,6 +100,7 @@ jupyterlab_widgets==3.0.13
 kiwisolver==1.4.7
 lark==1.2.2
 latex2sympy2==1.9.1
+latex2sympy2_extended==1.10.2
 libmambapy @ file:///croot/mamba-split_1714483352891/work/libmambapy
 llguidance==0.7.30
 llvmlite==0.44.0
@@ -107,6 +108,7 @@ lm-format-enforcer==0.10.12
 Markdown==3.7
 markdown-it-py==4.0.0
 MarkupSafe==3.0.2
+math-verify==0.8.0
 matplotlib==3.9.2
 matplotlib-inline==0.1.7
 mdurl==0.1.2
