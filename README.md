@@ -6,29 +6,41 @@
 
 在测试阶段，模型为每个问题生成多个候选答案，通过不同评估方法计算置信度分数，选择置信度最高的答案作为最终输出。这些高质量的问答对可用于后续的强化学习训练。
 
-## 三种评估方法
+## 支持的方法
 
-### 1. CoE-C 方法 (Chain-of-Embedding Convergence)
-文件: [CoE-C-deepseek.py]
+### 1. Baseline 方法
+文件: `methods/baseline.py`
+
+基础方法，每个问题只生成一个答案，不进行置信度评估。
+
+### 2. CoE-C 方法 
+文件: `methods/coe_c.py`
 
 基于链式嵌入收敛性评估答案质量：
 - 分析生成过程中隐藏状态的轨迹变化
 - 计算相邻层之间的幅度和角度变化
 - 使用CoE-C得分作为置信度指标
 
-### 2. 自置信度方法 (Self-Certainty)
-文件: [self-certainty-deepseek.py]
+### 3. Self-Certainty方法
+文件: `methods/self_certainty.py`
 
 结合token级别和步骤级别的置信度：
 - 使用概率分布的熵和对数似然计算置信度
 - 平衡token置信度和步骤概率
 
-### 3. 自我评估方法 (Self-Evaluation)
-文件: [self-eval-deepseek.py]
+### 4. Self-Evaluation方法
+文件: `methods/self_eval.py`
 
 使用模型自身评估每个推理步骤：
-- 让模型判断每个步骤的正确性(A/B选项)
+- 让模型判断每个步骤的正确性
 - 基于模型自评分数计算整体置信度
+
+### 5. Self-Consistency方法
+文件: `methods/self_consistency.py`
+
+基于多数投票的评估方法：
+- 生成多个候选答案
+- 选择出现频率最高的答案作为最终输出
 
 ## 安装依赖
 
@@ -38,29 +50,56 @@ pip install -r requirements.txt
 
 ## 使用方法
 
-### CoE-C 方法
+### 基本用法
+
 ```bash
-python CoE-C-deepseek.py --model_path /path/to/model --lambda_weight 0.5
+python main.py --method [method_name] --model_path /path/to/model
 ```
 
-### 自置信度方法
-```bash
-python self-certainty-deepseek.py --model_path /path/to/model --lambda_weight 0.5
-```
+### 参数说明
 
-### 自我评估方法
-```bash
-python self-eval-deepseek.py --model_path /path/to/model --lambda_weight 0.5
-```
-
-## 主要参数
-
+- `--method`: 选择评估方法 (baseline, self-certainty, self-eval, coe-c, self-consistency)
 - `--model_path`: 预训练模型路径
+- `--n_repetitive_sampling`: 每个问题生成的候选答案数量 (默认: 4)
+- `--temperature`: 生成时的温度参数，控制随机性 (默认: 0.1)
+- `--top_p`: Top-p采样参数 (默认: 1.0)
+- `--max_tokens`: 最大生成token数 (默认: 512)
 - `--subset_size`: 处理样本数量(用于快速测试)
-- `--lambda_weight`: 权重参数，平衡不同置信度指标(0-1)
-- `--n_repetitive_sampling`: 每个问题生成的候选答案数量
-- `--temperature`: 生成时的温度参数(控制随机性)
-- `--max_tokens`: 最大生成token数
+- `--lambda_weight`: 权重参数，平衡不同置信度指标(0-1) (默认: 0.5)
+- `--dataset_repo_name`: 数据集仓库名称 (默认: "openai/gsm8k")
+
+### 关键步骤提取参数
+
+- `--key_step_api_base`: OpenAI兼容API的基础URL (默认: "https://api.siliconflow.cn/v1")
+- `--key_step_api_model`: 用于关键步骤提取的模型 (默认: "Qwen/Qwen2.5-7B-Instruct")
+- `--key_step_temperature`: 关键步骤提取时的温度参数 (默认: 0.2)
+
+### 示例命令
+
+#### Baseline 方法
+```bash
+python main.py --method baseline --model_path meta-llama/Llama-3.2-1B-Instruct
+```
+
+#### CoE-C 方法
+```bash
+python main.py --method coe-c --model_path meta-llama/Llama-3.2-1B-Instruct --lambda_weight 0.5
+```
+
+#### Self-Certainty方法
+```bash
+python main.py --method self-certainty --model_path meta-llama/Llama-3.2-1B-Instruct --lambda_weight 0.5
+```
+
+#### Self-Evaluation方法
+```bash
+python main.py --method self-eval --model_path meta-llama/Llama-3.2-1B-Instruct --lambda_weight 0.5
+```
+
+#### Self-Consistency方法
+```bash
+python main.py --method self-consistency --model_path meta-llama/Llama-3.2-1B-Instruct
+```
 
 ## 工作流程
 
@@ -74,13 +113,9 @@ python self-eval-deepseek.py --model_path /path/to/model --lambda_weight 0.5
 生成的JSON文件包含以下信息：
 ```json
 {
-  "ID": 1,
-  "model_input": "问题文本",
-  "output": ["模型生成的完整答案"],
-  "model_answer": "提取的答案",
-  "true_answer": "真实答案",
-  "confidence": 0.85,  // 分数
-  "is_correct": true   // 答案正确性
+  "question": "问题文本",
+  "answer": "模型生成的完整答案",
+  "gpt_response": "提取的关键步骤"
 }
 ```
 
@@ -92,7 +127,17 @@ python self-eval-deepseek.py --model_path /path/to/model --lambda_weight 0.5
 - **质量保证**: 筛选出高质量的推理路径
 - **错误分析**: 对比不同方法的选择结果
 
-
 ## 输出目录
 
 结果保存在 `./TTT_data/` 目录中
+
+## 项目结构
+
+```
+.
+├── core/                 # 核心配置
+├── methods/              # 各种TTT方法实现
+├── utils/                # 工具函数
+├── main.py              # 主入口点
+└── README.md            # 项目说明
+```
