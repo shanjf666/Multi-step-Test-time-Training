@@ -14,12 +14,21 @@ os.environ["TRITON_ALLOW_MMA"] = "0"
 os.environ["NVIDIA_TF32_OVERRIDE"] = "0"
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
-from .core.config import Config
-from .methods.self_certainty import Self_Certainty_Selection
-from .methods.self_eval import Self_Eval_Selection
-from .methods.coe_c import CoE_C_Selection
-from .methods.baseline import baseline_evaluation
-from .methods.self_consistency import Self_Consistency_Selection
+# 将相对导入改为绝对导入
+from core.config import Config
+from methods.self_certainty import Self_Certainty_Selection
+from methods.self_eval import Self_Eval_Selection
+from methods.coe_c import CoE_C_Selection
+from methods.baseline import baseline_evaluation
+from methods.self_consistency import Self_Consistency_Selection
+
+
+def main():
+    # 创建配置对象
+    config = Config()
+
+    # 命令行参数
+    parser = argparse.ArgumentParser(description="基于步骤置信度的评估方法（Transformers + GPT关键步骤提取）")
 
 
 def main():

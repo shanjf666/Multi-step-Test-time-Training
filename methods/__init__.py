@@ -9,11 +9,12 @@ This module contains implementations of different Test-Time Training methods inc
 - Self-consistency based selection
 """
 
-from .baseline import baseline_evaluation
-from .self_certainty import Self_Certainty_Selection
-from .self_eval import Self_Eval_Selection
-from .coe_c import CoE_C_Selection
-from .self_consistency import Self_Consistency_Selection
+# 将相对导入改为绝对导入
+from methods.baseline import baseline_evaluation
+from methods.self_certainty import Self_Certainty_Selection
+from methods.self_eval import Self_Eval_Selection
+from methods.coe_c import CoE_C_Selection
+from methods.self_consistency import Self_Consistency_Selection
 
 __all__ = [
     'baseline_evaluation',
