@@ -137,8 +137,8 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
         # 保存为三字段格式
         table.append({
             "question": question,
-            # "answer": cleaned_text,
-            "true_answer": data['answer'],
+            "answer": cleaned_text,
+            # "true_answer": data['answer'],
             "gpt_response": key_step_text
         })
         index += 1

@@ -2,6 +2,7 @@
 Baseline method implementation
 """
 
+
 import re
 import json
 import time
@@ -11,7 +12,8 @@ from tqdm import tqdm
 from utils.common import (
     extract_model_answer, 
     is_correct_answer,
-    generate_with_transformers
+    generate_with_transformers,
+    clean_latex_format
 )
 
 
@@ -38,17 +40,17 @@ def baseline_evaluation(dataset, config, model, tokenizer, device, save_results=
     progress_bar = tqdm(enumerate(dataset), desc="Processing")
     for i, data in progress_bar:
         model_answer = ""  # 模型答案
-        # 使用正则表达式提取真实答案
-        match = re.search(r'####\s*(.+)', data['answer'])
-        if match:
-            true_answer = match.group(1).strip()
-        else:
-            true_answer = data['answer'].strip()
-            
-        question = data['question']
-        
-        # 构建提示格式
-        prompt = f"<|begin_of_text|>{config.system_prompt}\nQuestion: {question}\nAnswer:"
+        # 提取真值答案（MATH500样式）
+        true_answer = clean_latex_format(data['answer'])
+
+        question = data['problem']
+
+        # 构建模型提示
+        prompt = tokenizer.apply_chat_template(
+            [{"role": "system", "content": config.system_prompt},
+             {"role": "user", "content": f"Question: {question}\n\n\nAnswer:"}],
+            tokenize=False, add_generation_prompt=True
+        )
 
         # 生成1个候选答案
         try:
@@ -70,39 +72,41 @@ def baseline_evaluation(dataset, config, model, tokenizer, device, save_results=
         
         # 检查答案是否正确
         n_samples += 1
-        is_correct = is_correct_answer(model_answer, true_answer)
-        if is_correct:
+        clean_response_text = clean_latex_format(response_text)
+        if true_answer in clean_response_text[-30:] or is_correct_answer(model_answer, true_answer):
             n_true_ans += 1
 
-        # 清理控制标记
+        # 清理控制标记（注意不要用含空分支的正则）
         cleaned_text = re.sub(r'<\|eot_id\|>', '', response_text)
         cleaned_text = re.sub(r'<\|start_header_id\|>.*?<\|end_header_id\|>', '', cleaned_text, flags=re.DOTALL)
-        cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+        cleaned_text = re.sub(r'<\|.*?\|>', '', cleaned_text)
+        cleaned_text = cleaned_text.replace("<|end_of_text|>", "")
+        cleaned_text = cleaned_text.replace("<|end_of_sentence|>", "")
+        cleaned_text = cleaned_text.replace("</s>", "")
         cleaned_text = re.sub(r'<｜end▁of▁sentence｜>', '', cleaned_text)
-        cleaned_text = re.sub(r'</|end_of_text|', '', cleaned_text)
+        cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
         
         # 保存结果
         table.append({
-            "ID": index+1, 
-            "model_input": question, 
-            "output": [cleaned_text],
-            "model_answer": model_answer,  
-            "true_answer": true_answer,
-            "is_correct": is_correct
+            "question": question,
+            "answer": cleaned_text,
+            "gpt_response": ""
         })
         index += 1
                 
         # 更新进度条显示
-        progress_bar.set_postfix(accuracy=f"{n_true_ans/n_samples:.4f}")
+        acc_display = f"{(n_true_ans / n_samples):.4f}" if n_samples > 0 else "0.0000"
+        progress_bar.set_postfix(accuracy=acc_display)
         
         # 调试信息（前几个样本）
         if i < 10:
             print(f"\n--- 样本 {i+1} 调试信息 ---")
             print(f"问题: {question}")
-            print(f"真实答案: {true_answer}")
-            print(f"模型答案: {model_answer}")
-            print(f"清理后文本: {cleaned_text}")
-            print(f"是否正确: {is_correct}")
+            print(f"答案：{data['answer']}")
+            print(f"提取后的答案: {true_answer}")
+            print(f"关键步骤(gpt_response): ")
+            print(f"模型答案(提取): {model_answer}")
+            print(f"是否正确: {true_answer in clean_response_text[-30:] or is_correct_answer(model_answer, true_answer)}")
             print("--- 结束调试信息 ---\n")
     
     # 计算并打印评估结果
