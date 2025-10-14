@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import numpy as np
 from transformers import AutoTokenizer
 from collections import Counter
-
+from math_verify import parse
 
 def parse_structured_steps(response_text):
     """
@@ -49,6 +49,8 @@ def parse_structured_steps(response_text):
     # 退路3：按行
     lines = [line.strip() for line in cleaned_text.split('\n') if line.strip()]
     return lines if lines else [cleaned_text]
+
+
 
 
 def extract_model_answer(response_text):
@@ -106,20 +108,30 @@ def extract_model_answer(response_text):
         return number_match.group(1)
     return ""
 
-
 def is_correct_answer(predicted, true_answer):
     """
-    判断预测答案与真值是否一致（优先数值比较，否则字符串比较）
+    判断预测答案与真值是否一致（针对MATH500数据集）
     """
     if not predicted or not true_answer:
         return False
+    
+    # 清理答案，移除多余空格
+    pred_clean = re.sub(r'\s+', ' ', str(predicted)).strip()
+    true_clean = re.sub(r'\s+', ' ', str(true_answer)).strip()
+    
+    # 直接比较（忽略空格和换行符）
+    if pred_clean.replace(' ', '') == true_clean.replace(' ', ''):
+        return True
+    
+    # 尝试数值比较（如果可能）
     try:
-        pred_float = float(str(predicted).replace(',', ''))
-        true_float = float(str(true_answer).replace(',', ''))
+        pred_float = float(pred_clean.replace(',', ''))
+        true_float = float(true_clean.replace(',', ''))
         return abs(pred_float - true_float) < 1e-6
     except ValueError:
-        return (str(true_answer).strip() == str(predicted).strip() or
-                str(true_answer).replace(" ", "") == str(predicted).replace(" ", ""))
+        pass
+    
+    return False
 
 
 def generate_with_transformers(model, tokenizer, prompt, device, temperature=0.7, max_tokens=512, num_return_sequences=1, output_hidden_states=False):
@@ -556,3 +568,70 @@ def compute_CoE_C(token_index, step_length, hidden_states):
 
     # 返回最终CoE-C得分
     return math.sqrt(al_combdiff_x_ave ** 2 + al_combdiff_y_ave ** 2)
+
+def clean_latex_format(text):
+    """
+    清理 LaTeX 格式中无用的符号与空白命令，保留数学表达式核心内容。
+    
+    功能：
+      - 去掉 LaTeX 空白命令（如 \\quad, \\;, \\! 等）
+      - 去掉 \\left, \\right, \\boxed{}, $ 等装饰符
+      - 替换常见符号，如 \\pi -> pi
+      - 清除多余空格
+    
+    Args:
+        text (str): 包含 LaTeX 格式的字符串
+        
+    Returns:
+        str: 清理后的字符串
+    """
+    if not text:
+        return text
+
+    cleaned_text = text
+
+    # ===== 1️⃣ 去掉美元符号（$...$） =====
+    cleaned_text = cleaned_text.replace("$", "")
+
+    # ===== 2️⃣ 去掉 LaTeX 空白命令 =====
+    latex_whitespaces = {
+        r'\\,': ' ',
+        r'\\:': ' ',
+        r'\\;': ' ',
+        r'\\!': '',
+        r'\\enspace': ' ',
+        r'\\quad': ' ',
+        r'\\qquad': ' ',
+        r'\\hspace{[^}]*}': ' ',
+        r'\\vspace{[^}]*}': '',
+        r'\\phantom{[^}]*}': '',
+        r'\\hfill': ' ',
+        r'\\space': ' ',
+        r'\\ ': ' ',
+    }
+    for pattern, replacement in latex_whitespaces.items():
+        cleaned_text = re.sub(pattern, replacement, cleaned_text)
+
+    # ===== 3️⃣ 去掉常见无意义命令 =====
+    useless_cmds = [
+        r'\\left', r'\\right', r'\\big', r'\\Big', r'\\bigg', r'\\Bigg',
+        r'\\text', r'\\mathrm', r'\\displaystyle'
+    ]
+    for cmd in useless_cmds:
+        cleaned_text = re.sub(cmd, '', cleaned_text)
+
+    # ===== 4️⃣ 特殊结构展开 =====
+    cleaned_text = cleaned_text.replace(r'\boxed{', '')
+    cleaned_text = cleaned_text.replace(r'\(', '(').replace(r'\)', ')')
+    cleaned_text = cleaned_text.replace(r'\[', '[').replace(r'\]', ']')
+    cleaned_text = cleaned_text.replace(r'\{', '{').replace(r'\}', '}')
+
+    # ===== 5️⃣ 常见符号替换 =====
+    cleaned_text = cleaned_text.replace(r'\pi', 'pi')
+    cleaned_text = cleaned_text.replace(r'\theta', 'theta')
+    cleaned_text = cleaned_text.replace(r'\sqrt', 'sqrt')
+
+    # ===== 6️⃣ 去掉多余花括号、空格 =====
+    cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+
+    return cleaned_text

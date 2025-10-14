@@ -13,7 +13,8 @@ from utils.common import (
     extract_model_answer, 
     is_correct_answer,
     generate_with_transformers,
-    calculate_step_confidence_with_self_certainty
+    calculate_step_confidence_with_self_certainty,
+    clean_latex_format
 )
 from utils.key_step_extractor import summarize_key_steps_openai
 
@@ -37,12 +38,8 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
     for i, data in progress_bar:
         model_answer = ""
 
-        # 提取真值答案（GSM8K样式 #### <ans>）
-        match = re.search(r'####\s*(.+)', data['answer'])
-        if match:
-            true_answer = match.group(1).strip()
-        else:
-            true_answer = data['answer'].strip()
+        # 提取真值答案（MATH500样式）
+        true_answer = clean_latex_format(data['answer'])
 
         question = data['problem']
 
@@ -133,13 +130,15 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
  
         # 更新统计
         n_samples += 1
-        if is_correct_answer(model_answer, true_answer):
+        clean_key_step_text = clean_latex_format(key_step_text)
+        if true_answer in clean_key_step_text[-30:] or is_correct_answer(model_answer, true_answer):
             n_true_ans += 1
 
         # 保存为三字段格式
         table.append({
             "question": question,
-            "answer": cleaned_text,
+            # "answer": cleaned_text,
+            "true_answer": data['answer'],
             "gpt_response": key_step_text
         })
         index += 1
@@ -152,12 +151,14 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
         if i < 10:
             print(f"\n--- 样本 {i+1} 调试信息 ---")
             print(f"问题: {question}")
-            print(f"真实答案: {true_answer}")
-            print(f"模型答案(提取): {model_answer}")
-            print(f"清理后文本(保存的 answer): {cleaned_text[:500]}")
-            print(f"最高置信度: {step_confidence_scores[best_index]:.4f}")
-            print(f"是否正确: {is_correct_answer(model_answer, true_answer)}")
+            print(f"答案：{data['answer']}")
+            print(f"提取后的答案: {true_answer}")
+            # print(f"清理后文本(保存的 answer): {cleaned_text[:500]}")
             print(f"关键步骤(gpt_response): {key_step_text}")
+            print(f"模型答案(提取): {model_answer}")
+            # print(f"最高置信度: {step_confidence_scores[best_index]:.4f}")
+            print(f"是否正确: {true_answer in clean_key_step_text[-30:] or is_correct_answer(model_answer, true_answer)}")
+            
             print("--- 结束调试信息 ---\n")
 
     # 打印评估结果
