@@ -36,9 +36,9 @@ def Self_Eval_Selection(dataset, config, model, tokenizer, device,
     for i, data in progress_bar:
         model_answer = ""
         
-        true_answer = data['Answer']
+        true_answer = str(data['Answer'])
 
-        question = data['Problem']
+        question = data['Question']
         
         prompt = f"<|begin_of_text|>{config.system_prompt}\nQuestion: {question}\nAnswer:"
 
@@ -120,7 +120,9 @@ def Self_Eval_Selection(dataset, config, model, tokenizer, device,
         
         # 更新统计
         n_samples += 1
-        if is_correct_answer(model_answer, true_answer):
+        clean_key_step_text = clean_latex_format(key_step_text)
+        model_answer = clean_latex_format(model_answer)
+        if true_answer in clean_key_step_text[-10:] or is_correct_answer(model_answer, true_answer):
             n_true_ans += 1
         
         # 保存结果
