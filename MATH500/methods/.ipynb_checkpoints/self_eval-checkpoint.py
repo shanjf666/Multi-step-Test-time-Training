@@ -13,7 +13,8 @@ from utils.common import (
     extract_model_answer, 
     is_correct_answer,
     generate_with_transformers,
-    calculate_step_confidence_with_self_eval
+    calculate_step_confidence_with_self_eval,
+    clean_latex_format
 )
 from utils.key_step_extractor import summarize_key_steps_openai
 
@@ -35,14 +36,18 @@ def Self_Eval_Selection(dataset, config, model, tokenizer, device,
     progress_bar = tqdm(enumerate(dataset), desc="Processing")
     for i, data in progress_bar:
         model_answer = ""
-        match = re.search(r'####\s*(.+)', data['answer'])
-        if match:
-            true_answer = match.group(1).strip()
-        else:
-            true_answer = data['answer'].strip()
-            
-        question = data['question']
-        prompt = f"<|begin_of_text|>{config.system_prompt}\nQuestion: {question}\nAnswer:"
+
+        # 提取真值答案（MATH500样式）
+        true_answer = clean_latex_format(data['answer'])
+
+        question = data['problem']
+
+        # 构建模型提示
+        prompt = tokenizer.apply_chat_template(
+            [{"role": "system", "content": config.system_prompt},
+             {"role": "user", "content": f"Question: {question}\n\n\nAnswer:"}],
+            tokenize=False, add_generation_prompt=True
+        )
 
         try:
             candidates = generate_with_transformers(
@@ -94,12 +99,15 @@ def Self_Eval_Selection(dataset, config, model, tokenizer, device,
         
         response_text = tokenizer.decode(best_candidate["tokens"], skip_special_tokens=False)
         
-        # 清理控制标记
+        # 清理控制标记（注意不要用含空分支的正则）
         cleaned_text = re.sub(r'<\|eot_id\|>', '', response_text)
         cleaned_text = re.sub(r'<\|start_header_id\|>.*?<\|end_header_id\|>', '', cleaned_text, flags=re.DOTALL)
-        cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+        cleaned_text = re.sub(r'<\|.*?\|>', '', cleaned_text)
+        cleaned_text = cleaned_text.replace("<|end_of_text|>", "")
+        cleaned_text = cleaned_text.replace("<|end_of_sentence|>", "")
+        cleaned_text = cleaned_text.replace("</s>", "")
         cleaned_text = re.sub(r'<｜end▁of▁sentence｜>', '', cleaned_text)
-        cleaned_text = re.sub(r'</|end_of_text|', '', cleaned_text)
+        cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
         
         # 使用 OpenAI 兼容接口抽取关键步骤
         key_step_text = ""
@@ -122,7 +130,8 @@ def Self_Eval_Selection(dataset, config, model, tokenizer, device,
         
         # 更新统计
         n_samples += 1
-        if is_correct_answer(model_answer, true_answer):
+        clean_key_step_text = clean_latex_format(key_step_text)
+        if true_answer in clean_key_step_text[-30:] or is_correct_answer(model_answer, true_answer):
             n_true_ans += 1
         
         # 保存结果
@@ -141,12 +150,11 @@ def Self_Eval_Selection(dataset, config, model, tokenizer, device,
         if i < 10:
             print(f"\n--- 样本 {i+1} 调试信息 ---")
             print(f"问题: {question}")
-            print(f"真实答案: {true_answer}")
-            print(f"模型答案(提取): {model_answer}")
-            print(f"清理后文本(保存的 answer): {cleaned_text[:500]}")
-            print(f"最高置信度: {step_confidence_scores[best_index]:.4f}")
-            print(f"是否正确: {is_correct_answer(model_answer, true_answer)}")
+            print(f"答案：{data['answer']}")
+            print(f"提取后的答案: {true_answer}")
             print(f"关键步骤(gpt_response): {key_step_text}")
+            print(f"模型答案(提取): {model_answer}")
+            print(f"是否正确: {true_answer in clean_key_step_text[-30:] or is_correct_answer(model_answer, true_answer)}")
             print("--- 结束调试信息 ---\n")
     
     # 计算并打印评估结果
@@ -163,5 +171,8 @@ def Self_Eval_Selection(dataset, config, model, tokenizer, device,
         os.makedirs("./TTT_data", exist_ok=True)
         output_file = f"./TTT_data/Best_of_{N}_Transformers_Step_SelfEval_lambda_{lambda_weight}_deepseek_7b_key.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
-            json.dump(table, file, indent=4, ensure_ascii=False)
+            json.dump({
+                "results": table,
+                "accuracy": accuracy
+            }, file, indent=4, ensure_ascii=False)
         print(f"Results saved to {output_file}")

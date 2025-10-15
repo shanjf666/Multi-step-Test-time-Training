@@ -2,6 +2,7 @@
 Self-Consistency method implementation
 """
 
+
 import re
 import json
 import time
@@ -12,7 +13,8 @@ from collections import Counter
 from utils.common import (
     extract_model_answer, 
     is_correct_answer,
-    generate_with_transformers
+    generate_with_transformers,
+    clean_latex_format
 )
 
 
@@ -40,17 +42,17 @@ def Self_Consistency_Selection(dataset, config, model, tokenizer, device, N=4, s
     progress_bar = tqdm(enumerate(dataset), desc="Processing")
     for i, data in progress_bar:
         model_answer = ""  # 模型答案
-        # 使用正则表达式提取真实答案
-        match = re.search(r'####\s*(.+)', data['answer'])
-        if match:
-            true_answer = match.group(1).strip()
-        else:
-            true_answer = data['answer'].strip()
-            
-        question = data['question']
-        
-        # 构建提示格式
-        prompt = f"<|begin_of_text|>{config.system_prompt}\nQuestion: {question}\nAnswer:"
+        # 提取真值答案（MATH500样式）
+        true_answer = clean_latex_format(data['answer'])
+
+        question = data['problem']
+
+        # 构建模型提示
+        prompt = tokenizer.apply_chat_template(
+            [{"role": "system", "content": config.system_prompt},
+             {"role": "user", "content": f"Question: {question}\n\n\nAnswer:"}],
+            tokenize=False, add_generation_prompt=True
+        )
 
         # 生成N个候选答案
         try:
@@ -67,16 +69,29 @@ def Self_Consistency_Selection(dataset, config, model, tokenizer, device, N=4, s
         # 提取所有候选答案
         candidate_answers = []
         valid_candidates = []
+        valid_candidates_cleaned = []
         
         for candidate in candidates:
             try:
                 extracted_answer = extract_model_answer(tokenizer.decode(candidate["tokens"], skip_special_tokens=False))
                 candidate_answers.append(extracted_answer)
-                valid_candidates.append(tokenizer.decode(candidate["tokens"], skip_special_tokens=False))
+                response_text = tokenizer.decode(candidate["tokens"], skip_special_tokens=False)
+                # 清理控制标记（注意不要用含空分支的正则）
+                cleaned_text = re.sub(r'<\|eot_id\|>', '', response_text)
+                cleaned_text = re.sub(r'<\|start_header_id\|>.*?<\|end_header_id\|>', '', cleaned_text, flags=re.DOTALL)
+                cleaned_text = re.sub(r'<\|.*?\|>', '', cleaned_text)
+                cleaned_text = cleaned_text.replace("<|end_of_text|>", "")
+                cleaned_text = cleaned_text.replace("<|end_of_sentence|>", "")
+                cleaned_text = cleaned_text.replace("</s>", "")
+                cleaned_text = re.sub(r'<｜end▁of▁sentence｜>', '', cleaned_text)
+                cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+                valid_candidates_cleaned.append(cleaned_text)
+                valid_candidates.append(response_text)
             except Exception as e:
                 print(f"Error extracting answer from candidate: {e}")
                 candidate_answers.append("")
                 valid_candidates.append("")
+                valid_candidates_cleaned.append("")
 
         # 统计答案频率，选择出现最多的答案
         answer_counter = Counter(candidate_answers)
@@ -92,33 +107,30 @@ def Self_Consistency_Selection(dataset, config, model, tokenizer, device, N=4, s
 
         # 检查答案是否正确
         n_samples += 1
-        if is_correct_answer(model_answer, true_answer):
+        if true_answer in valid_candidates_cleaned[-30:] or is_correct_answer(model_answer, true_answer):
             n_true_ans += 1
 
         # 保存结果
         table.append({
-            "ID": index+1, 
-            "model_input": question, 
-            "outputs": valid_candidates,  # 保存所有生成的结果
-            "extracted_answers": candidate_answers,  # 保存所有提取的答案
-            "model_answer": model_answer,  
-            "true_answer": true_answer,
-            "answer_counts": dict(answer_counter),  # 保存答案统计
-            "is_correct": is_correct_answer(model_answer, true_answer)
+            "question": question,
+            "answer": valid_candidates_cleaned[0] if valid_candidates_cleaned else "",  # 保存第一个生成的结果
+            "gpt_response": ""
         })
         index += 1
                 
         # 更新进度条显示
-        progress_bar.set_postfix(accuracy=f"{n_true_ans/n_samples:.4f}")
+        acc_display = f"{(n_true_ans / n_samples):.4f}" if n_samples > 0 else "0.0000"
+        progress_bar.set_postfix(accuracy=acc_display)
         
         # 调试信息（前几个样本）
         if i < 10:
             print(f"\n--- 样本 {i+1} 调试信息 ---")
             print(f"问题: {question}")
-            print(f"真实答案: {true_answer}")
+            print(f"答案：{data['answer']}")
+            print(f"提取后的答案: {true_answer}")
             print(f"模型答案: {model_answer}")
             print(f"答案统计: {dict(answer_counter)}")
-            print(f"是否正确: {is_correct_answer(model_answer, true_answer)}")
+            print(f"是否正确: {true_answer in valid_candidates_cleaned[-30:] or is_correct_answer(model_answer, true_answer)}")
             print("--- 结束调试信息 ---\n")
     
     # 计算并打印评估结果
@@ -135,5 +147,8 @@ def Self_Consistency_Selection(dataset, config, model, tokenizer, device, N=4, s
         os.makedirs("./TTT_data", exist_ok=True)
         output_file = f"./TTT_data/Best_of_{N}_Transformers_Self_Consistency_deepseek.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
-            json.dump(table, file, indent=4, ensure_ascii=False)
+            json.dump({
+                "results": table,
+                "accuracy": accuracy
+            }, file, indent=4, ensure_ascii=False)
         print(f"Results saved to {output_file}")

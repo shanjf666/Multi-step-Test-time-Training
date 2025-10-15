@@ -133,5 +133,8 @@ def Self_Consistency_Selection(dataset, config, model, tokenizer, device, N=4, s
         os.makedirs("./TTT_data", exist_ok=True)
         output_file = f"./TTT_data/Best_of_{N}_Transformers_Self_Consistency_deepseek.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
-            json.dump(table, file, indent=4, ensure_ascii=False)
+            json.dump({
+                "results": table,
+                "accuracy": accuracy
+            }, file, indent=4, ensure_ascii=False)
         print(f"Results saved to {output_file}")

@@ -119,5 +119,8 @@ def baseline_evaluation(dataset, config, model, tokenizer, device, save_results=
         os.makedirs("./TTT_data", exist_ok=True)
         output_file = f"./TTT_data/baseline_deepseek_7b.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
-            json.dump(table, file, indent=4, ensure_ascii=False)
+            json.dump({
+                "results": table,
+                "accuracy": accuracy
+            }, file, indent=4, ensure_ascii=False)
         print(f"Results saved to {output_file}")
