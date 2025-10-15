@@ -49,7 +49,7 @@ def main():
     parser.add_argument("--top_p", default=1.0, type=float, help="Top-p采样参数")
     parser.add_argument("--model_path", default="meta-llama/Llama-3.2-1B-Instruct", help="基础模型路径")
     parser.add_argument("--save_to_json", default=True, action="store_true", help="是否将结果保存到JSON文件")
-    parser.add_argument("--dataset_repo_name", default="openai/gsm8k", help="数据集仓库名称")
+    parser.add_argument("--dataset_repo_name", default="Maxwell-Jia/AIME_2024", help="数据集仓库名称")
     parser.add_argument("--max_tokens", default=512, type=int, help="最大生成标记数")
     parser.add_argument("--subset_size", default=None, type=int, help="测试子集大小（用于快速测试）")
     parser.add_argument("--lambda_weight", default=0.5, type=float,
