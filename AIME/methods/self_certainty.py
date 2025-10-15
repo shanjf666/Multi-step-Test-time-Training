@@ -13,7 +13,8 @@ from utils.common import (
     extract_model_answer, 
     is_correct_answer,
     generate_with_transformers,
-    calculate_step_confidence_with_self_certainty
+    calculate_step_confidence_with_self_certainty,
+    clean_latex_format
 )
 from utils.key_step_extractor import summarize_key_steps_openai
 
@@ -37,14 +38,10 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
     for i, data in progress_bar:
         model_answer = ""
 
-        # 提取真值答案（GSM8K样式 #### <ans>）
-        match = re.search(r'####\s*(.+)', data['answer'])
-        if match:
-            true_answer = match.group(1).strip()
-        else:
-            true_answer = data['answer'].strip()
+        # 提取真值答案
+        true_answer = str(data['Answer'])
 
-        question = data['question']
+        question = data['Question']
 
         # 构建模型提示
         prompt = tokenizer.apply_chat_template(
@@ -133,7 +130,9 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
  
         # 更新统计
         n_samples += 1
-        if is_correct_answer(model_answer, true_answer):
+        clean_key_step_text = clean_latex_format(key_step_text)
+        model_answer = clean_latex_format(model_answer)
+        if true_answer in clean_key_step_text[-10:] or is_correct_answer(model_answer, true_answer):
             n_true_ans += 1
 
         # 保存为三字段格式

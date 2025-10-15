@@ -131,14 +131,15 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
         # 更新统计
         n_samples += 1
         clean_key_step_text = clean_latex_format(key_step_text)
+        model_answer = clean_latex_format(model_answer)
         if true_answer in clean_key_step_text[-30:] or is_correct_answer(model_answer, true_answer):
             n_true_ans += 1
 
         # 保存为三字段格式
         table.append({
             "question": question,
-            # "answer": cleaned_text,
-            "true_answer": data['answer'],
+            "answer": cleaned_text,
+            # "true_answer": data['answer'],
             "gpt_response": key_step_text
         })
         index += 1

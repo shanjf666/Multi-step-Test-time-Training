@@ -569,69 +569,71 @@ def compute_CoE_C(token_index, step_length, hidden_states):
     # 返回最终CoE-C得分
     return math.sqrt(al_combdiff_x_ave ** 2 + al_combdiff_y_ave ** 2)
 
-def clean_latex_format(text):
-    """
-    清理 LaTeX 格式中无用的符号与空白命令，保留数学表达式核心内容。
-    
-    功能：
-      - 去掉 LaTeX 空白命令（如 \\quad, \\;, \\! 等）
-      - 去掉 \\left, \\right, \\boxed{}, $ 等装饰符
-      - 替换常见符号，如 \\pi -> pi
-      - 清除多余空格
-    
-    Args:
-        text (str): 包含 LaTeX 格式的字符串
-        
-    Returns:
-        str: 清理后的字符串
-    """
-    if not text:
-        return text
+def clean_latex_format(text: str) -> str:
+    if not text or not isinstance(text, str):
+        return ""
 
-    cleaned_text = text
+    cleaned_text = text.strip()
 
-    # ===== 1️⃣ 去掉美元符号（$...$） =====
-    cleaned_text = cleaned_text.replace("$", "")
+    # ===== 1️⃣ 移除美元符号和转义美元符号 =====
+    cleaned_text = cleaned_text.replace("$", "").replace("\\$", "$")
 
-    # ===== 2️⃣ 去掉 LaTeX 空白命令 =====
+    # ===== 2️⃣ 移除 LaTeX 空白命令 =====
     latex_whitespaces = {
-        r'\\,': ' ',
-        r'\\:': ' ',
-        r'\\;': ' ',
-        r'\\!': '',
-        r'\\enspace': ' ',
-        r'\\quad': ' ',
-        r'\\qquad': ' ',
-        r'\\hspace{[^}]*}': ' ',
-        r'\\vspace{[^}]*}': '',
-        r'\\phantom{[^}]*}': '',
-        r'\\hfill': ' ',
-        r'\\space': ' ',
-        r'\\ ': ' ',
+        r'\\,': '', r'\\:': '', r'\\;': '', r'\\!': '',
+        r'\\enspace': '', r'\\quad': '', r'\\qquad': '',
+        r'\\hspace{[^}]*}': '', r'\\vspace{[^}]*}': '',
+        r'\\phantom{[^}]*}': '', r'\\hfill': '', r'\\space': '',
+        r'\\ ': '', r'\\mspace{[^}]*}': '', r'\\kern{[^}]*}': '',
     }
     for pattern, replacement in latex_whitespaces.items():
         cleaned_text = re.sub(pattern, replacement, cleaned_text)
 
-    # ===== 3️⃣ 去掉常见无意义命令 =====
+    # ===== 3️⃣ 移除装饰性命令 =====
     useless_cmds = [
         r'\\left', r'\\right', r'\\big', r'\\Big', r'\\bigg', r'\\Bigg',
-        r'\\text', r'\\mathrm', r'\\displaystyle'
+        r'\\text\s*', r'\\mathrm', r'\\displaystyle', r'\\rm', r'\\it',
+        r'\\bf', r'\\cal', r'\\scriptstyle', r'\\scriptscriptstyle'
     ]
     for cmd in useless_cmds:
         cleaned_text = re.sub(cmd, '', cleaned_text)
 
-    # ===== 4️⃣ 特殊结构展开 =====
-    cleaned_text = cleaned_text.replace(r'\boxed{', '')
+    # ===== 4️⃣ 展开特殊结构 =====
     cleaned_text = cleaned_text.replace(r'\(', '(').replace(r'\)', ')')
     cleaned_text = cleaned_text.replace(r'\[', '[').replace(r'\]', ']')
     cleaned_text = cleaned_text.replace(r'\{', '{').replace(r'\}', '}')
 
-    # ===== 5️⃣ 常见符号替换 =====
-    cleaned_text = cleaned_text.replace(r'\pi', 'pi')
-    cleaned_text = cleaned_text.replace(r'\theta', 'theta')
-    cleaned_text = cleaned_text.replace(r'\sqrt', 'sqrt')
+    # ===== 5️⃣ 扩展符号替换（SymPy 兼容） =====
+    symbol_replacements = {
+        r'\\pi': 'pi', r'\\theta': 'theta', r'\\sqrt': 'sqrt',
+        r'\\frac{([^}]*?)}({[^}]*?})': r'\1/\2',  # \frac{a}{b} -> a/b
+        r'\\times': '*', r'\\div': '/', r'\\infty': 'oo',
+        r'\\alpha': 'alpha', r'\\beta': 'beta', r'\\gamma': 'gamma',
+        r'\\delta': 'delta', r'\\sum': 'sum', r'\\int': 'integrate',
+        r'\\cdot': '*', r'\\pm': '+-', r'\\mp': '-+'
+    }
+    for pattern, replacement in symbol_replacements.items():
+        cleaned_text = re.sub(pattern, replacement, cleaned_text)
 
-    # ===== 6️⃣ 去掉多余花括号、空格 =====
+    # ===== 6️⃣ 移除非打印字符（参考 postprocess_pred） =====
+    np_pattern = re.compile(r'[\x00-\x1f]')
+    cleaned_text = np_pattern.sub('', cleaned_text)
+
+    # ===== 7️⃣ 规范化空格和括号 =====
+    # 移除左括号后和右括号前的空格
+    cleaned_text = re.sub(r'\(\s+', '(', cleaned_text)  # (  -> (
+    cleaned_text = re.sub(r'\s+\)', ')', cleaned_text)  #  ) -> )
+    cleaned_text = re.sub(r'\[\s+', '[', cleaned_text)  # [  -> [
+    cleaned_text = re.sub(r'\s+\]', ']', cleaned_text)  #  ] -> ]
+    cleaned_text = re.sub(r'\{\s+', '{', cleaned_text)  # {  -> {
+    cleaned_text = re.sub(r'\s+\}', '}', cleaned_text)  #  } -> }
+    # 移除逗号前后空格
+    cleaned_text = re.sub(r'\s*,\s*', ',', cleaned_text)
+    # 规范化多余空格
     cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+
+    # ===== 8️⃣ 错误处理：检查是否为空或无效 =====
+    if not cleaned_text:
+        return ""
 
     return cleaned_text

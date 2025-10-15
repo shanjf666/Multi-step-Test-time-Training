@@ -37,14 +37,10 @@ def CoE_C_Selection(dataset, config, model, tokenizer, device,
     progress_bar = tqdm(enumerate(dataset), desc="Processing")
     for i, data in progress_bar:
         model_answer = ""
-        # 提取真实答案
-        match = re.search(r'####\s*(.+)', data['answer'])
-        if match:
-            true_answer = match.group(1).strip()
-        else:
-            true_answer = data['answer'].strip()
-            
-        question = data['question']
+        
+        true_answer = data['Answer']
+
+        question = data['Problem']
         
         # 构建提示格式
         prompt = f"<|begin_of_text|>{config.system_prompt}\nQuestion: {question}\nAnswer:"

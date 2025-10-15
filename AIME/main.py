@@ -1,6 +1,6 @@
 """
 export OPENAI_API_KEY='sk-szeemiuaxtqymzkkpaezgadntxpajxwyhrzofzsodywqngqz'
-python main.py --method self-certainty --model_path meta-llama/Llama-3.2-1B-Instruct --lambda_weight 0.5 --n_repetitive_sampling 1 --subset_size 100 --max_tokens 1024
+python main.py --method self-certainty --model_path meta-llama/Llama-3.2-1B-Instruct --lambda_weight 0.5 --n_repetitive_sampling 4 --max_tokens 2048
 python main.py --method self-consistency --model_path /root/autodl-tmp/multi-TTT_test --lambda_weight 0.5 --subset_size 100 --max_tokens 1024
 """
 
@@ -49,7 +49,7 @@ def main():
     parser.add_argument("--top_p", default=1.0, type=float, help="Top-p采样参数")
     parser.add_argument("--model_path", default="meta-llama/Llama-3.2-1B-Instruct", help="基础模型路径")
     parser.add_argument("--save_to_json", default=True, action="store_true", help="是否将结果保存到JSON文件")
-    parser.add_argument("--dataset_repo_name", default="Maxwell-Jia/AIME_2024", help="数据集仓库名称")
+    parser.add_argument("--dataset_repo_name", default="gneubig/aime-1983-2024", help="数据集仓库名称")
     parser.add_argument("--max_tokens", default=512, type=int, help="最大生成标记数")
     parser.add_argument("--subset_size", default=None, type=int, help="测试子集大小（用于快速测试）")
     parser.add_argument("--lambda_weight", default=0.5, type=float,
@@ -103,7 +103,7 @@ def main():
 
     # 加载数据集
     print("正在加载数据集...")
-    dataset = load_dataset(args.dataset_repo_name, 'main', split="test")
+    dataset = load_dataset(args.dataset_repo_name, 'default', split="train")
     print(dataset[0])
 
     # 测试子集

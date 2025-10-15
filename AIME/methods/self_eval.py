@@ -35,13 +35,11 @@ def Self_Eval_Selection(dataset, config, model, tokenizer, device,
     progress_bar = tqdm(enumerate(dataset), desc="Processing")
     for i, data in progress_bar:
         model_answer = ""
-        match = re.search(r'####\s*(.+)', data['answer'])
-        if match:
-            true_answer = match.group(1).strip()
-        else:
-            true_answer = data['answer'].strip()
-            
-        question = data['question']
+        
+        true_answer = data['Answer']
+
+        question = data['Problem']
+        
         prompt = f"<|begin_of_text|>{config.system_prompt}\nQuestion: {question}\nAnswer:"
 
         try:

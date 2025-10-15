@@ -135,14 +135,13 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
         n_samples += 1
         if is_correct_answer(model_answer, true_answer):
             n_true_ans += 1
-
-        # 保存为三字段格式
-        table.append({
-            "question": question,
-            "answer": cleaned_text,
-            "gpt_response": key_step_text
-        })
-        index += 1
+            # 保存为三字段格式
+            table.append({
+                "question": question,
+                "answer": cleaned_text,
+                "gpt_response": key_step_text
+            })
+            index += 1
 
         # 更新进度条显示
         acc_display = f"{(n_true_ans / n_samples):.4f}" if n_samples > 0 else "0.0000"

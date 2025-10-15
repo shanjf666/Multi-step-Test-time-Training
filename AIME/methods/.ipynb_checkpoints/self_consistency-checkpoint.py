@@ -40,14 +40,10 @@ def Self_Consistency_Selection(dataset, config, model, tokenizer, device, N=4, s
     progress_bar = tqdm(enumerate(dataset), desc="Processing")
     for i, data in progress_bar:
         model_answer = ""  # 模型答案
-        # 使用正则表达式提取真实答案
-        match = re.search(r'####\s*(.+)', data['answer'])
-        if match:
-            true_answer = match.group(1).strip()
-        else:
-            true_answer = data['answer'].strip()
-            
-        question = data['question']
+        
+        true_answer = data['Answer']
+
+        question = data['Problem']
         
         # 构建提示格式
         prompt = f"<|begin_of_text|>{config.system_prompt}\nQuestion: {question}\nAnswer:"
