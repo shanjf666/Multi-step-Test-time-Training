@@ -13,7 +13,8 @@ from utils.common import (
     extract_model_answer, 
     is_correct_answer,
     generate_with_transformers,
-    calculate_step_confidence_with_self_certainty
+    calculate_step_confidence_with_self_certainty,
+    clean_latex_format
 )
 from utils.key_step_extractor import summarize_key_steps_openai
 
@@ -133,15 +134,17 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
  
         # 更新统计
         n_samples += 1
-        if is_correct_answer(model_answer, true_answer):
+        clean_key_step_text = clean_latex_format(key_step_text)
+        if true_answer in clean_key_step_text[-10:] or is_correct_answer(model_answer, true_answer):
             n_true_ans += 1
-            # 保存为三字段格式
-            table.append({
-                "question": question,
-                "answer": cleaned_text,
-                "gpt_response": key_step_text
-            })
-            index += 1
+            
+        # 保存为三字段格式
+        table.append({
+            "question": question,
+            "answer": cleaned_text,
+            "gpt_response": key_step_text
+        })
+        index += 1
 
         # 更新进度条显示
         acc_display = f"{(n_true_ans / n_samples):.4f}" if n_samples > 0 else "0.0000"
