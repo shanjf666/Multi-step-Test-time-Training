@@ -6,20 +6,21 @@ class Config:
     def __init__(self):
         self.system_prompt = (
             """
-                Question: There are 15 trees in the grove. Grove workers will plant trees in the grove today. After they are done, there will be 21 trees. How many trees did the grove workers plant today?
-                Answer: ## Step1: There are 15 trees originally. ## Step2: Then there were 21 trees after some more were planted. ## Step3: So there must have been 21 - 15 = 6. The answer is 6.
+                Question:  Define p = ∑{k=1}^∞ 1/k² and q = ∑{k=1}^∞ 1/k³. Find a way to write ∑{j=1}^∞ ∑{k=1}^∞ 1/(j + k)³ in terms of p and q. 
+                Answer: ## Step1: Consider the double sum ∑{j=1}^∞ ∑{k=1}^∞ 1/(j + k)³. For a fixed n = j + k, count the number of pairs (j, k) such that j + k = n. ## Step2: The pairs are (j, k) = (1, n-1), (2, n-2), …, (n-1, 1), giving n-1 pairs, each contributing 1/n³ to the sum. ## Step3: Thus, the double sum can be rewritten as ∑{n=1}^∞ (n-1) · 1/n³ = ∑{n=1}^∞ (n-1)/n³. ## Step4: Simplify the term: (n-1)/n³ = n/n³ - 1/n³ = 1/n² - 1/n³. ## Step5: The sum becomes ∑{n=1}^∞ (1/n² - 1/n³) = ∑{n=1}^∞ 1/n² - ∑_{n=1}^∞ 1/n³ = p - q. The answer is \\boxed{p - q}.
+                
+             
+                Question: If f(x) = (3x-2)/(x-2), what is the value of f(-2) + f(-1) + f(0)? Express your answer as a common fraction. 
+                Answer: ## Step1: Compute f(-2) = (3(-2)-2)/(-2-2) = (-6-2)/-4 = -8/-4 = 2. ## Step2: Compute f(-1) = (3(-1)-2)/(-1-2) = (-3-2)/-3 = -5/-3 = 5/3. ## Step3: Compute f(0) = (3(0)-2)/(0-2) = -2/-2 = 1. ## Step4: Sum the values: f(-2) + f(-1) + f(0) = 2 + 5/3 + 1. ## Step5: Convert to a common denominator: 2 = 6/3, 1 = 3/3, so 2 + 5/3 + 1 = 6/3 + 5/3 + 3/3 = 14/3. The answer is \\boxed{\\frac{14}{3}}.
                 
                 
-                Question: If there are 3 cars in the parking lot and 2 more cars arrive, how many cars are in the parking lot?
-                Answer: ## Step1: There are originally 3 cars. ## Step2: 2 more cars arrive. ## Step3: 3 + 2 = 5. The answer is 5.
+                
+                Question: How many positive whole-number divisors does 196 have?
+                Answer: ## Step1: Find the prime factorization of 196: 196 = 2² · 7². ## Step2: For a number n = p₁^{e₁} · p₂^{e₂}, the number of divisors is (e₁ + 1)(e₂ + 1). Here, e₁ = 2 (for prime 2) and e₂ = 2 (for prime 7). ## Step3: Calculate the number of divisors: (2+1)(2+1) = 3 · 3 = 9. ## Step4: Verify that the divisors (from combinations of 2⁰, 2¹, 2² and 7⁰, 7¹, 7²) are distinct integers: 1, 2, 4, 7, 14, 28, 49, 98, 196. The answer is \\boxed{9}.
                 
                 
-                Question: Leah had 32 chocolates and her sister had 42. If they ate 35, how many pieces do they have left in total?
-                Answer: ## Step1: Originally, Leah had 32 chocolates. ## Step2: Her sister had 42. ## Step3: So in total they had 32 + 42 = 74. ## Step4: After eating 35, they had 74 - 35 = 39. The answer is 39.
-                
-                
-                Question: Jason had 20 lollipops. He gave Denny some lollipops. Now Jason has 12 lollipops. How many lollipops did Jason give to Denny?
-                Answer: ## Step1: Jason started with 20 lollipops. ## Step2: Then he had 12 after giving some to Denny. ## Step3: So he gave Denny 20 - 12 = 8. The answer is 8.
+                Question: What is the smallest positive perfect cube that can be written as the sum of three consecutive integers?
+                Answer: ## Step1: The sum of three consecutive integers is (k-1) + k + (k+1) = 3k, which is a multiple of 3. ## Step2: A number n is the sum of three consecutive integers if and only if it is divisible by 3. ## Step3: A perfect cube is of the form m³. The smallest positive perfect cube divisible by 3 is 3³ = 27. ## Step4: Verify: 27 ÷ 3 = 9, so the integers are 8, 9, 10, and 8 + 9 + 10 = 27. The next cube, 4³ = 64, is not divisible by 3. The answer is \\boxed{27}.
                 
                 
                 Question: Shawn has five toys. For Christmas, he got two toys each from his mom and dad. How many toys does he have now?

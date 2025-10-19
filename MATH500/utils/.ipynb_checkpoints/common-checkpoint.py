@@ -232,6 +232,7 @@ def calculate_step_confidence_with_self_certainty(prompt_ids, response_ids, logi
 
         if token_confidences:
             avg_token_confidence = sum(token_confidences) / len(token_confidences)
+            step_cumulative_logprob /= step_length
             step_probability = np.exp(step_cumulative_logprob)
             step_confidence = (avg_token_confidence ** (1 - lambda_weight)) * (step_probability ** lambda_weight)
             step_confidences.append(step_confidence)
@@ -310,7 +311,7 @@ def calculate_step_confidence_with_self_eval(prompt_ids, response_ids, logits, t
                 step_cumulative_logprob += log_probs[token_index + j][actual_token_id].item()
         
         step_evaluation_score = step_evaluations[i] if i < len(step_evaluations) else 0.5
-        
+        step_cumulative_logprob /= step_length
         step_probability = np.exp(step_cumulative_logprob)
         step_confidence = step_evaluation_score**(1 - lambda_weight) * step_probability**lambda_weight
         step_confidences.append(step_confidence)
@@ -376,6 +377,7 @@ def calculate_step_confidence_with_CoE_C(prompt_ids, response_ids, logits, hidde
         step_CoE_score = compute_CoE_C(token_index, step_length, hidden_states)
         
         # 结合自评分数和步骤概率
+        step_cumulative_logprob /= step_length
         step_probability = np.exp(step_cumulative_logprob)
         step_confidence = step_CoE_score**(1 - lambda_weight) * step_probability**lambda_weight
         step_confidences.append(step_confidence)

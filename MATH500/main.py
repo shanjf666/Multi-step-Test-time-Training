@@ -1,6 +1,6 @@
 """
 export OPENAI_API_KEY='sk-szeemiuaxtqymzkkpaezgadntxpajxwyhrzofzsodywqngqz'
-python main.py --method self-certainty --model_path meta-llama/Llama-3.2-1B-Instruct --lambda_weight 0.5 --n_repetitive_sampling 2 --subset_size 100 --max_tokens 1024
+python main.py --method self-certainty --model_path meta-llama/Llama-3.2-1B-Instruct --lambda_weight 0.5 --n_repetitive_sampling 8 --subset_size 100 --max_tokens 1024
 python main.py --method self-consistency --model_path meta-llama/Llama-3.2-1B-Instruct --lambda_weight 0.5 --subset_size 100 --max_tokens 1024
 """
 
