@@ -91,6 +91,9 @@ def Self_Eval_Selection(dataset, config, model, tokenizer, device,
             
         best_index = step_confidence_scores.index(max(step_confidence_scores))
         best_candidate = valid_candidates[best_index]
+
+        if step_confidence_scores[best_index]< config.confidence_threshold:
+            continue
         
         response_text = tokenizer.decode(best_candidate["tokens"], skip_special_tokens=False)
         
@@ -114,22 +117,21 @@ def Self_Eval_Selection(dataset, config, model, tokenizer, device,
             print(f"[WARN] key-step extraction failed for sample {i}: {e}")
             key_step_text = ""
 
-        if key_step_text.strip():
-            model_answer = extract_model_answer(key_step_text)
-        else:
-            # 回退策略
-            model_answer = extract_model_answer(response_text)
+        model_answer = extract_model_answer(response_text)
         
         # 更新统计
         n_samples += 1
-        if is_correct_answer(model_answer, true_answer):
+        clean_key_step_text = clean_latex_format(response_text)
+        if true_answer in clean_key_step_text[-10:] or is_correct_answer(model_answer, true_answer):
             n_true_ans += 1
         
         # 保存结果
         table.append({
             "question": question,
             "answer": cleaned_text,
-            "gpt_response": key_step_text
+            "gpt_response": key_step_text,
+            "max_confidence": step_confidence_scores[best_index],
+            "correct": true_answer in clean_key_step_text[-10:] or is_correct_answer(model_answer, true_answer)
         })
         index += 1
                 

@@ -43,4 +43,5 @@ class Config:
         self.max_tokens = 512
         self.n = 4
         self.lambda_weight = 0.5
+        self.confidence_threshold = -float('inf')
         self.custom_chat_template = None

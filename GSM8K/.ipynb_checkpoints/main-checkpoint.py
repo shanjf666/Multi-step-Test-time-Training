@@ -1,6 +1,8 @@
 """
 export OPENAI_API_KEY='sk-szeemiuaxtqymzkkpaezgadntxpajxwyhrzofzsodywqngqz'
-python main.py --method self-certainty --model_path meta-llama/Llama-3.2-1B-Instruct --lambda_weight 0.5 --n_repetitive_sampling 8 --subset_size 100 --max_tokens 1024
+python main.py --method self-certainty --model_path meta-llama/Llama-3.2-1B-Instruct --max_tokens 1024 --confidence_threshold 4.9  --lambda_weight 0.5 --n_repetitive_sampling 4 --subset_size 100 --max_tokens 1024
+python main.py --method self-certainty --model_path lijia321/GSM8K_labeled_5e-7_outcome_reward
+python main.py --method self-certainty --model_path /root/autodl-tmp/data/models/modelscope_cache/models/lijia321/GSM8K_labeled_5e-7_outcome_reward/actor
 python main.py --method self-consistency --model_path /root/autodl-tmp/multi-TTT_test --lambda_weight 0.5 --subset_size 100 --max_tokens 1024
 """
 
@@ -54,6 +56,8 @@ def main():
     parser.add_argument("--subset_size", default=None, type=int, help="测试子集大小（用于快速测试）")
     parser.add_argument("--lambda_weight", default=0.5, type=float,
                         help="置信度计算中的lambda权重参数，用于平衡token置信度和步骤概率")
+    parser.add_argument("--confidence_threshold", default=-float('inf'), type=float,
+                        help="置信度阈值，低于此值的样本将被舍弃且不计入统计")
 
     # 关键步骤提取（OpenAI 兼容接口，仅用 API）
     parser.add_argument("--key_step_api_base", default="https://api.siliconflow.cn/v1",
@@ -71,6 +75,7 @@ def main():
     config.top_p = float(args.top_p)
     config.max_tokens = int(args.max_tokens)
     config.lambda_weight = float(args.lambda_weight)
+    config.confidence_threshold = float(args.confidence_threshold)
 
     # 设备
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

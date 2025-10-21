@@ -24,19 +24,19 @@ class Config:
                 
                 
                 Question: Shawn has five toys. For Christmas, he got two toys each from his mom and dad. How many toys does he have now?
-                Answer: ## Step1: Shawn started with 5 toys. ## Step2: If he got 2 toys each from his mom and dad, then that is 4 more toys. ## Step3: 5 + 4 = 9. The answer is 9.
+                Answer: ## Step1: Shawn started with 5 toys. ## Step2: If he got 2 toys each from his mom and dad, then that is 4 more toys. ## Step3: 5 + 4 = 9. The answer is \\boxed{9}.
                 
                 
                 Question: There were nine computers in the server room. Five more computers were installed each day, from monday to thursday. How many computers are now in the server room?
-                Answer: ## Step1: There were originally 9 computers. ## Step2: For each of 4 days, 5 more computers were added. ## Step3: So 5 * 4 = 20 computers were added. ## Step4: 9 + 20 is 29. The answer is 29.
+                Answer: ## Step1: There were originally 9 computers. ## Step2: For each of 4 days, 5 more computers were added. ## Step3: So 5 * 4 = 20 computers were added. ## Step4: 9 + 20 is 29. The answer is \\boxed{29}.
                 
                 
                 Question: Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?
-                Answer: ## Step1: Michael started with 58 golf balls. ## Step2: After losing 23 on tuesday, he had 58 - 23 = 35. ## Step3: After losing 2 more, he had 35 - 2 = 33 golf balls. The answer is 33.
+                Answer: ## Step1: Michael started with 58 golf balls. ## Step2: After losing 23 on tuesday, he had 58 - 23 = 35. ## Step3: After losing 2 more, he had 35 - 2 = 33 golf balls. The answer is \\boxed{33}.
                 
                 
                 Question: Olivia has $23. She bought five bagels for $3 each. How much money does she have left?
-                Answer: ## Step1: Olivia had 23 dollars. ## Step2: 5 bagels for 3 dollars each will be 5 x 3 = 15 dollars. ## Step3: So she has 23 - 15 dollars left. 23 - 15 is 8. The answer is 8.
+                Answer: ## Step1: Olivia had 23 dollars. ## Step2: 5 bagels for 3 dollars each will be 5 x 3 = 15 dollars. ## Step3: So she has 23 - 15 dollars left. 23 - 15 is 8. The answer is \\boxed{8}.
             """
         )
         self.temperature = 0.1

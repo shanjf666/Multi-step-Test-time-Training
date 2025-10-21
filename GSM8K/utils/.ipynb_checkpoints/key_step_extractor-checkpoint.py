@@ -5,19 +5,25 @@ Key step extraction utilities using OpenAI-compatible APIs
 import re
 import math
 
-KEY_STEP_PROMPT_TEMPLATE = """You are a reasoning process analyst.
+KEY_STEP_PROMPT_TEMPLATE = """You are a reasoning step extraction model for mathematical problems.
 
-Your task is to extract the *key reasoning steps* (v1, v2, ...) from the given reasoning trace.
-Each key step should represent an essential logical or mathematical operation that directly contributes to the final answer.
-And do not judge the correctness of the reasoning.
-Follow these principles (based on StepRAR methodology):
-1. Identify only **essential reasoning variables or equations** that move the solution forward.
-2. Remove redundant or narrative sentences.
-3. Retain minimal but complete steps (e.g., "16 - 3 = 13", "13 - 4 = 9", "9 * 2 = 18").
-4. Unify equivalent math expressions ("6/3=2", "6 divided by 3 equals 2") into a **canonical format**.
-5. Provide the output in the format like:
-  key_steps: ##Step 1: ..., ##Step 2: ..., ...,final_answer: ...,
+Your goal: extract only symbolic or numeric computation steps that directly lead to the answer.
 
+Rules:
+1. Remove all narrative or explanatory phrases (e.g., "so", "therefore", "she has").
+2. Keep only equations, arithmetic operations, or proportional relationships.
+3. For each computation, list equivalent forms: symbolic (e.g., 3×5), decimal (15.0), and verbal (e.g., "3 times 5") and latex (e.g., $3 \\times 5$).
+4. Merge trivial transformations (e.g., “= 15” and “equals 15”) into one step.
+5. Omit the final answer step.
+6. Do not correct any mistakes in the reasoning—extract what is actually used, even if flawed
+7. Output in the following JSON format:
+{{
+  "key_steps": [
+    ["16 - 3 = 13"],
+    ["13 - 4 = 9"],
+    ["9 × 2 = 18", "9 * 2","9 times 2"]
+  ]
+}}
 Now extract the key reasoning steps from the reasoning below:
 
 {reasoning}
