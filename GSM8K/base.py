@@ -1,6 +1,6 @@
 """
 export OPENAI_API_KEY='sk-szeemiuaxtqymzkkpaezgadntxpajxwyhrzofzsodywqngqz'
-python base.py
+python base.py --model_path Qwen/Qwen2.5-Math-7B-Instruct
 """
 
 

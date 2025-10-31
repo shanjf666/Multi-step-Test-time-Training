@@ -12,8 +12,13 @@ from collections import Counter
 
 def parse_structured_steps(response_text):
     """
-    解析结构化步骤（优先匹配 "## Step N:" 块），否则回退为句子/段落/行。
+    从模型响应中解析结构化步骤。
+    优先匹配：
+      1. "## Step N:" 结构（最高优先级）
+      2. "Step N:" 结构（次优先级）
+    若未匹配到结构化步骤，则回退为句子、段落或行拆分。
     """
+    # === 1. 清洗无关标记 ===
     cleaned_text = re.sub(r'<\|eot_id\|>', '', response_text)
     cleaned_text = re.sub(r'<\|start_header_id\|>.*?<\|end_header_id\|>', '', cleaned_text, flags=re.DOTALL)
     cleaned_text = re.sub(r'<\|.*?\|>', '', cleaned_text)  # 泛化清除 <|...|>
@@ -23,88 +28,89 @@ def parse_structured_steps(response_text):
     cleaned_text = re.sub(r'<｜end▁of▁sentence｜>', '', cleaned_text)
     cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
 
-    # 先匹配"## Step N: ..."
-    step_pattern = r'##\s*Step\s*(\d+)\s*[:.]?\s*(.*?)(?=##\s*Step\s*\d+\s*[:.]?|$)'
-    matches = re.findall(step_pattern, cleaned_text, re.DOTALL | re.IGNORECASE)
-    if matches:
-        steps = []
-        for _, content in matches:
-            content = content.strip()
-            if content:
-                steps.append(content)
+    # === 2. 匹配 "## Step N:" 结构 ===
+    step_pattern_h2 = r'##\s*Step\s*(\d+)\s*[:.]?\s*(.*?)(?=##\s*Step\s*\d+\s*[:.]?|$)'
+    matches_h2 = re.findall(step_pattern_h2, cleaned_text, re.DOTALL | re.IGNORECASE)
+    if matches_h2:
+        
+        steps = [content.strip() for _, content in matches_h2 if content.strip()]
         if steps:
             return steps
 
-    # 退路1：按句子粗分
-    sentences = re.split(r'[.!?]+', cleaned_text)
+    # === 3. 匹配 "Step N:" 结构 ===
+    step_pattern_plain = r'\bStep\s*(\d+)\s*[:.]?\s*(.*?)(?=\bStep\s*\d+\s*[:.]?|$)'
+    matches_plain = re.findall(step_pattern_plain, cleaned_text, re.DOTALL | re.IGNORECASE)
+    if matches_plain:
+        steps = [content.strip() for _, content in matches_plain if content.strip()]
+        if steps:
+            return steps
+
+    # === 4. 回退方案：句子 / 段落 / 行 ===
+    # 句子分割（粗略）
+    sentences = re.split(r'(?<=[.!?。！？])\s+', cleaned_text)
     sentences = [s.strip() for s in sentences if s.strip()]
     if len(sentences) >= 2:
         return sentences
 
-    # 退路2：按段落
+    # 段落分割
     paragraphs = [p.strip() for p in cleaned_text.split('\n\n') if p.strip()]
     if len(paragraphs) >= 2:
         return paragraphs
 
-    # 退路3：按行
+    # 行分割
     lines = [line.strip() for line in cleaned_text.split('\n') if line.strip()]
     return lines if lines else [cleaned_text]
 
+_SOLUTION_CLIP_CHARS = 100  # 限制匹配范围，提升性能
 
 def extract_model_answer(response_text):
     """
-    从模型响应中提取最终数值/答案，适配若干常见格式。
+    从模型响应中提取数值型最终答案，适配常见推理输出格式。
+    优先提取最后出现的有效数字（整数/小数/负数），用于数学推理任务。
     """
-    cleaned_response = response_text.replace("<|begin_of_text|>", "").strip()
-    cleaned_response = cleaned_response.replace("<|start_header_id|>assistant<|end_header_id|>", "").strip()
-    cleaned_response = cleaned_response.replace("<|eot_id|>", "").strip()
-    cleaned_response = cleaned_response.replace("</s>", "").strip()
-    cleaned_response = cleaned_response.replace("<|end_of_text|>", "").strip()
-    cleaned_response = cleaned_response.replace("<|end_of_sentence|>", "").strip()
-    cleaned_response = re.sub(r'<\|.*?\|>', '', cleaned_response)
-    cleaned_response = re.sub(r'\s+', ' ', cleaned_response).strip()
 
-    if not cleaned_response:
+    # === 1. 清洗生成标记与特殊符号 ===
+    cleaned = re.sub(
+        r"<\|.*?\|>|</s>|</?answer>|</?s>|<s>|<eos>|<bos>|<pad>",
+        "", response_text, flags=re.IGNORECASE
+    ).strip()
+    cleaned = re.sub(r'\s+', ' ', cleaned)
+
+    if not cleaned:
         return ""
 
+    # === 2. 限制匹配范围（加速处理） ===
+    if len(cleaned) > _SOLUTION_CLIP_CHARS:
+        cleaned = cleaned[-_SOLUTION_CLIP_CHARS:]
+
+    # === 3. 优先匹配显式格式（####, Answer:, boxed{}, 等） ===
     patterns = [
-        r'Answer\s*[:\.\s]*([^\n]+)',
-        r'####\s*([^\n]+)',
-        r'\\boxed{(.+?)}',
-        r'boxed{(.+?)}',
-        r'The answer is\s*[:\.\s]*([^\.\n]+)',
-        r'Final Answer\s*[:\.\s]*([^\.\n]+)',
-        r'Therefore\s*,\s*([^\.\n]+)',
-        r'答案[:：]\s*([^\n]+)',
-        r'所以[:：]\s*([^\n]+)',
-        r'final answer\s*[:\.\s]*([^\.\n]+)',
-        r'(\d+(\.\d+)?)',
-        r'<answer>\s*(.*?)\s*</answer>',
-        r'<answer>(.*?)</answer>'
+        r'####\s*([\-0-9\.,]+)',
+        r'Answer\s*[:\.\s]*([\-0-9\.,]+)',
+        r'Final Answer\s*[:\.\s]*([\-0-9\.,]+)',
+        r'The answer is\s*[:\.\s]*([\-0-9\.,]+)',
+        r'\\boxed{([\-0-9\.,]+)}',
+        r'boxed{([\-0-9\.,]+)}',
+        r'最终答案[:：]\s*([\-0-9\.,]+)',
+        r'答案[:：]\s*([\-0-9\.,]+)',
+        r'所以[:：]\s*([\-0-9\.,]+)',
+        r'Therefore\s*,?\s*([\-0-9\.,]+)',
     ]
 
     for pattern in patterns:
-        match = re.search(pattern, cleaned_response, re.IGNORECASE)
+        match = re.search(pattern, cleaned, re.IGNORECASE)
         if match:
-            answer = match.group(1).strip()
-            number_match = re.search(r'([+-]?\d+(?:\.\d+)?)', answer)
-            if number_match:
-                return number_match.group(1)
-            if answer:
-                return answer
+            ans = match.group(1).replace(",", "").replace("$", "").strip()
+            if re.match(r'^[+-]?\d+(\.\d+)?$', ans):
+                return ans
 
-    lines = cleaned_response.split('\n')
-    for line in reversed(lines):
-        line = line.strip()
-        if line and not line.lower().startswith(('question:', 'step', 'solution:', 'answer:', '问题:', '步骤:')):
-            number_match = re.search(r'([+-]?\d+(?:\.\d+)?)$', line)
-            if number_match:
-                return number_match.group(1)
+    # === 4. 回退策略：提取最后一个数值 ===
+    all_numbers = re.findall(r'([+-]?\d+(?:\.\d+)?)', cleaned)
+    if all_numbers:
+        return all_numbers[-1]
 
-    number_match = re.search(r'([+-]?\d+(?:\.\d+)?)', cleaned_response)
-    if number_match:
-        return number_match.group(1)
     return ""
+
 
 
 def is_correct_answer(predicted, true_answer):

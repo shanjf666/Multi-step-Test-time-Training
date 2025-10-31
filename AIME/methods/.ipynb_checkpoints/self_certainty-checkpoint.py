@@ -110,27 +110,30 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
         cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
 
         # 仅使用 OpenAI 兼容接口抽取关键步骤
-        key_step_text = ""
-        try:
-            key_step_text = summarize_key_steps_openai(
-                client=key_api_client,
-                model=key_api_model,
-                reasoning_text=cleaned_text,
-                temperature=key_api_temp
-            )
-        except Exception as e:
-            print(f"[WARN] key-step extraction failed for sample {i}: {e}")
-            key_step_text = ""
+        # key_step_text = ""
+        # try:
+        #     key_step_text = summarize_key_steps_openai(
+        #         client=key_api_client,
+        #         model=key_api_model,
+        #         reasoning_text=cleaned_text,
+        #         temperature=key_api_temp
+        #     )
+        # except Exception as e:
+        #     print(f"[WARN] key-step extraction failed for sample {i}: {e}")
+        #     key_step_text = ""
 
-        if key_step_text.strip():
-            model_answer = extract_model_answer(key_step_text)
-        else:
-            # 回退策略（可按需只留一个回退）
-            model_answer = extract_model_answer(response_text)
- 
+        # if key_step_text.strip():
+        #     model_answer = extract_model_answer(key_step_text)
+        # else:
+        #     # 回退策略（可按需只留一个回退）
+        #     model_answer = extract_model_answer(response_text)
+        
+        model_answer = extract_model_answer(response_text)
+
         # 更新统计
         n_samples += 1
-        clean_key_step_text = clean_latex_format(key_step_text)
+        # clean_key_step_text = clean_latex_format(key_step_text)
+        clean_key_step_text = clean_latex_format(cleaned_text)
         model_answer = clean_latex_format(model_answer)
         if true_answer in clean_key_step_text[-10:] or is_correct_answer(model_answer, true_answer):
             n_true_ans += 1
@@ -139,7 +142,7 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
         table.append({
             "question": question,
             "answer": cleaned_text,
-            "gpt_response": key_step_text
+            # "gpt_response": key_step_text
         })
         index += 1
 
@@ -151,12 +154,14 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
         if i < 10:
             print(f"\n--- 样本 {i+1} 调试信息 ---")
             print(f"问题: {question}")
-            print(f"真实答案: {true_answer}")
+            print(f"答案：{data['Answer']}")
+            print(f"提取后的答案: {true_answer}")
+            print(f"清理后文本(保存的 answer): {cleaned_text}")
+            # print(f"关键步骤(gpt_response): {key_step_text}")
             print(f"模型答案(提取): {model_answer}")
-            print(f"清理后文本(保存的 answer): {cleaned_text[:500]}")
-            print(f"最高置信度: {step_confidence_scores[best_index]:.4f}")
-            print(f"是否正确: {is_correct_answer(model_answer, true_answer)}")
-            print(f"关键步骤(gpt_response): {key_step_text}")
+            # print(f"最高置信度: {step_confidence_scores[best_index]:.4f}")
+            print(f"是否正确: {true_answer in clean_key_step_text[-30:] or is_correct_answer(model_answer, true_answer)}")
+            
             print("--- 结束调试信息 ---\n")
 
     # 打印评估结果

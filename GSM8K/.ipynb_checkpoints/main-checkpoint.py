@@ -1,9 +1,9 @@
 """
 export OPENAI_API_KEY='sk-szeemiuaxtqymzkkpaezgadntxpajxwyhrzofzsodywqngqz'
-python main.py --method self-certainty --model_path meta-llama/Llama-3.2-1B-Instruct --max_tokens 1024 --confidence_threshold 4.9  --lambda_weight 0.5 --n_repetitive_sampling 4 --subset_size 100 --max_tokens 1024
-python main.py --method self-certainty --model_path lijia321/GSM8K_labeled_5e-7_outcome_reward
-python main.py --method self-certainty --model_path /root/autodl-tmp/data/models/modelscope_cache/models/lijia321/GSM8K_labeled_5e-7_outcome_reward/actor
-python main.py --method self-consistency --model_path /root/autodl-tmp/multi-TTT_test --lambda_weight 0.5 --subset_size 100 --max_tokens 1024
+python main.py --method self-certainty --model_path Qwen/Qwen2.5-Math-7B-Instruct --temperature 0.7 --max_tokens 1024 --confidence_threshold 4.9  --lambda_weight 0.5 --n_repetitive_sampling 4 --subset_size 100 --max_tokens 1024
+python main.py --method baseline --model_path Qwen/Qwen2.5-Math-7B-Instruct --temperature 0.7
+python main.py --method self-certainty --max_tokens 1024 --model_path /root/autodl-tmp/data/models/modelscope_cache/models/lijia321/gsm8k_filtered_step_similarity_0___35_unnormalized
+python main.py --method self-certainty --max_tokens 1024 --model_path /root/autodl-tmp/data/models/modelscope_cache/models/lijia321/gsm8k_labeled_step_reward --n_repetitive_sampling 1
 """
 
 import os
@@ -60,9 +60,9 @@ def main():
                         help="置信度阈值，低于此值的样本将被舍弃且不计入统计")
 
     # 关键步骤提取（OpenAI 兼容接口，仅用 API）
-    parser.add_argument("--key_step_api_base", default="https://api.siliconflow.cn/v1",
+    parser.add_argument("--key_step_api_base", default="https://api.agicto.cn/v1",
                         help="OpenAI-compatible base URL for key-step extraction")
-    parser.add_argument("--key_step_api_model", default="Qwen/Qwen2.5-7B-Instruct",
+    parser.add_argument("--key_step_api_model", default="qwen3-max-preview",
                         help="Model name for key-step extraction")
     parser.add_argument("--key_step_temperature", default=0.2, type=float,
                         help="Temperature for key-step extraction")
@@ -85,7 +85,7 @@ def main():
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY 未设置。请先 export OPENAI_API_KEY='your_api_key'")
-    key_client = OpenAI(api_key=api_key, base_url=args.key_step_api_base)
+    key_client = OpenAI(api_key="sk-tYOMNTO756qseiQpibBDzQpNuaME9Ies5BSkq9lzhUMCxkC5", base_url=args.key_step_api_base)
 
     # 加载基础语言模型
     print("正在加载语言模型...")

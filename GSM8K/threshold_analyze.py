@@ -57,6 +57,6 @@ def analyze_thresholds(file_path, thresholds=None):
     return df, thresholds, original_accuracy
 
 # 示例用法
-file_path = 'TTT_data/Best_of_4_Transformers_Step_Certainty_lambda_0.5_deepseek_7b_key_1.json'  # 替换为你的 JSON 文件路径
-thresholds = np.arange(4.0, 5.5, 0.05)  # 阈值从 0.5 到 0.95，步长 0.05
+file_path = 'TTT_data/Best_of_4_Transformers_Step_Certainty_lambda_0.5_gsm8k_filtered_step_reward_key.json'  # 替换为你的 JSON 文件路径
+thresholds = np.arange(4.75, 6, 0.05)  # 阈值从 0.5 到 0.95，步长 0.05
 df, thresholds, original_accuracy = analyze_thresholds(file_path, thresholds)

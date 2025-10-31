@@ -46,5 +46,5 @@ def main(file_path):
 
 # 示例用法
 if __name__ == "__main__":
-    file_path = 'TTT_data/Best_of_4_Transformers_Step_Certainty_lambda_0.5_deepseek_7b_key_2.json'  # 替换为您的 JSON 文件路径
+    file_path = 'TTT_data/Best_of_4_Transformers_Step_Certainty_lambda_0.5_gsm8k_labeled_step_reward_key2.json'  # 替换为您的 JSON 文件路径
     main(file_path)

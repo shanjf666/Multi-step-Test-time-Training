@@ -48,11 +48,17 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
         question = data['question']
 
         # 构建模型提示
-        prompt = tokenizer.apply_chat_template(
-            [{"role": "system", "content": config.system_prompt},
-             {"role": "user", "content": f"Question: {question}\n\n\nAnswer:"}],
-            tokenize=False, add_generation_prompt=True
-        )
+        # prompt = tokenizer.apply_chat_template(
+        #     [{"role": "system", "content": config.system_prompt},
+        #      {"role": "user", "content": f"Question: {question}\n\n\nAnswer:"}],
+        #     tokenize=False, add_generation_prompt=True
+        # )
+        # prompt = tokenizer.apply_chat_template(
+        #     [{"role": "user", "content": f"Question: {question}\nLet's think step by step and output the final answer after '####'.\n"}],
+        #     tokenize=False, add_generation_prompt=True
+        # )
+        prompt = f"Question: {question}\nLet's think step by step and output the final answer after '####'.\n"
+
 
         # 生成 N 个候选
         try:
@@ -175,7 +181,7 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
     # 写入JSON（每条为 {question, answer, gpt_response}）
     if save_results:
         os.makedirs("./TTT_data", exist_ok=True)
-        output_file = f"./TTT_data/Best_of_{N}_Transformers_Step_Certainty_lambda_{lambda_weight}_deepseek_7b_key.json"
+        output_file = f"./TTT_data/Best_of_{N}_Transformers_Step_Certainty_lambda_{lambda_weight}_gsm8k_filtered_step_reward_key2.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
             json.dump({
                 "results": table,
