@@ -46,8 +46,7 @@ def CoE_C_Selection(dataset, config, model, tokenizer, device,
 
         # 构建模型提示
         prompt = tokenizer.apply_chat_template(
-            [{"role": "system", "content": config.system_prompt},
-             {"role": "user", "content": f"Question: {question}\n\n\nAnswer:"}],
+            [{"role": "user", "content": f"{config.system_prompt}Q: {question}\n\nA:"}],
             tokenize=False, add_generation_prompt=True
         )
 

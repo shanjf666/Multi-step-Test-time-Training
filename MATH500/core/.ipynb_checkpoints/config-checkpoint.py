@@ -6,37 +6,60 @@ class Config:
     def __init__(self):
         self.system_prompt = (
             """
-                Question:  Define p = ∑{k=1}^∞ 1/k² and q = ∑{k=1}^∞ 1/k³. Find a way to write ∑{j=1}^∞ ∑{k=1}^∞ 1/(j + k)³ in terms of p and q. 
-                Answer: ## Step1: Consider the double sum ∑{j=1}^∞ ∑{k=1}^∞ 1/(j + k)³. For a fixed n = j + k, count the number of pairs (j, k) such that j + k = n. ## Step2: The pairs are (j, k) = (1, n-1), (2, n-2), …, (n-1, 1), giving n-1 pairs, each contributing 1/n³ to the sum. ## Step3: Thus, the double sum can be rewritten as ∑{n=1}^∞ (n-1) · 1/n³ = ∑{n=1}^∞ (n-1)/n³. ## Step4: Simplify the term: (n-1)/n³ = n/n³ - 1/n³ = 1/n² - 1/n³. ## Step5: The sum becomes ∑{n=1}^∞ (1/n² - 1/n³) = ∑{n=1}^∞ 1/n² - ∑_{n=1}^∞ 1/n³ = p - q. The answer is \\boxed{p - q}.
-                
-             
-                Question: If f(x) = (3x-2)/(x-2), what is the value of f(-2) + f(-1) + f(0)? Express your answer as a common fraction. 
-                Answer: ## Step1: Compute f(-2) = (3(-2)-2)/(-2-2) = (-6-2)/-4 = -8/-4 = 2. ## Step2: Compute f(-1) = (3(-1)-2)/(-1-2) = (-3-2)/-3 = -5/-3 = 5/3. ## Step3: Compute f(0) = (3(0)-2)/(0-2) = -2/-2 = 1. ## Step4: Sum the values: f(-2) + f(-1) + f(0) = 2 + 5/3 + 1. ## Step5: Convert to a common denominator: 2 = 6/3, 1 = 3/3, so 2 + 5/3 + 1 = 6/3 + 5/3 + 3/3 = 14/3. The answer is \\boxed{\\frac{14}{3}}.
-                
-                
-                
-                Question: How many positive whole-number divisors does 196 have?
-                Answer: ## Step1: Find the prime factorization of 196: 196 = 2² · 7². ## Step2: For a number n = p₁^{e₁} · p₂^{e₂}, the number of divisors is (e₁ + 1)(e₂ + 1). Here, e₁ = 2 (for prime 2) and e₂ = 2 (for prime 7). ## Step3: Calculate the number of divisors: (2+1)(2+1) = 3 · 3 = 9. ## Step4: Verify that the divisors (from combinations of 2⁰, 2¹, 2² and 7⁰, 7¹, 7²) are distinct integers: 1, 2, 4, 7, 14, 28, 49, 98, 196. The answer is \\boxed{9}.
-                
-                
-                Question: What is the smallest positive perfect cube that can be written as the sum of three consecutive integers?
-                Answer: ## Step1: The sum of three consecutive integers is (k-1) + k + (k+1) = 3k, which is a multiple of 3. ## Step2: A number n is the sum of three consecutive integers if and only if it is divisible by 3. ## Step3: A perfect cube is of the form m³. The smallest positive perfect cube divisible by 3 is 3³ = 27. ## Step4: Verify: 27 ÷ 3 = 9, so the integers are 8, 9, 10, and 8 + 9 + 10 = 27. The next cube, 4³ = 64, is not divisible by 3. The answer is \\boxed{27}.
-                
-                
-                Question: Shawn has five toys. For Christmas, he got two toys each from his mom and dad. How many toys does he have now?
-                Answer: ## Step1: Shawn started with 5 toys. ## Step2: If he got 2 toys each from his mom and dad, then that is 4 more toys. ## Step3: 5 + 4 = 9. The answer is \\boxed{9}.
-                
-                
-                Question: There were nine computers in the server room. Five more computers were installed each day, from monday to thursday. How many computers are now in the server room?
-                Answer: ## Step1: There were originally 9 computers. ## Step2: For each of 4 days, 5 more computers were added. ## Step3: So 5 * 4 = 20 computers were added. ## Step4: 9 + 20 is 29. The answer is \\boxed{29}.
-                
-                
-                Question: Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?
-                Answer: ## Step1: Michael started with 58 golf balls. ## Step2: After losing 23 on tuesday, he had 58 - 23 = 35. ## Step3: After losing 2 more, he had 35 - 2 = 33 golf balls. The answer is \\boxed{33}.
-                
-                
-                Question: Olivia has $23. She bought five bagels for $3 each. How much money does she have left?
-                Answer: ## Step1: Olivia had 23 dollars. ## Step2: 5 bagels for 3 dollars each will be 5 x 3 = 15 dollars. ## Step3: So she has 23 - 15 dollars left. 23 - 15 is 8. The answer is \\boxed{8}.
+            You are a math reasoning assistant. Solve each question carefully, showing clear step-by-step reasoning before giving the final numeric answer.  
+            End each solution with the final numeric answer as: #### {final_number}
+            
+            Example 1:
+            Q: A bakery sells muffins for $3 each and cupcakes for $2 each. If a customer buys 4 muffins and 6 cupcakes, how much does she spend in total?
+            A: ## Step1: Each muffin costs $3, and she buys 4 muffins, so muffin cost = 4 × 3 = $12.  
+            ## Step2: Each cupcake costs $2, and she buys 6 cupcakes, so cupcake cost = 6 × 2 = $12.  
+            ## Step3: Total cost = 12 + 12 = $24.  
+            #### 24
+            
+            Example 2:
+            Q: A bus can carry 40 passengers. If there are 8 buses, and 10 seats are empty on each bus, how many passengers are on all the buses combined?
+            A: ## Step1: Each bus has 40 seats, but 10 are empty, so there are 40 - 10 = 30 passengers per bus.  
+            ## Step2: With 8 buses, total passengers = 8 × 30 = 240.  
+            #### 240
+            
+            Example 3:
+            Q: There are 5 boxes, and each box contains 12 apples. If 15 apples are eaten, how many apples remain?
+            A: ## Step1: Total apples initially = 5 × 12 = 60.  
+            ## Step2: After 15 apples are eaten, remaining = 60 - 15 = 45.  
+            #### 45
+            
+            Example 4:
+            Q: A train travels 80 miles in 2 hours. What is its average speed in miles per hour?
+            A: ## Step1: Speed = distance ÷ time = 80 ÷ 2 = 40 mph.  
+            #### 40
+            
+            Example 5:
+            Q: A rectangle has a length of 10 cm and width of 4 cm. What is its area?
+            A: ## Step1: Area = length × width = 10 × 4 = 40 square cm.  
+            #### 40
+            
+            Example 6:
+            Q: Sarah buys 3 notebooks costing $5 each and 2 pens costing $2 each. How much does she spend in total?
+            A: ## Step1: Notebook cost = 3 × 5 = $15.  
+            ## Step2: Pen cost = 2 × 2 = $4.  
+            ## Step3: Total = 15 + 4 = $19.  
+            #### 19
+            
+            Example 7:
+            Q: A tank holds 500 liters of water. If 120 liters are drained out and 80 liters are added, how much water is now in the tank?
+            A: ## Step1: Start with 500 liters.  
+            ## Step2: Drain 120 liters → 500 - 120 = 380 liters.  
+            ## Step3: Add 80 liters → 380 + 80 = 460 liters.  
+            #### 460
+            
+            Example 8:
+            Q: John reads 20 pages of a book each day. If the book has 180 pages, how many days will it take him to finish it?
+            A: ## Step1: Days = total pages ÷ pages per day = 180 ÷ 20 = 9 days.  
+            #### 9
+            
+            Now, solve the following problem step by step and end with the numeric answer in the same format:
+
+            
             """
         )
         self.temperature = 0.1
