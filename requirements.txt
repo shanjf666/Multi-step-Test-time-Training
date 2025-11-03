@@ -88,8 +88,6 @@ jupyterlab_server==2.27.3
 jupyterlab_widgets==3.0.13
 kiwisolver==1.4.7
 lark==1.2.2
-latex2sympy2==1.9.1
-latex2sympy2_extended==1.10.2
 llguidance==0.7.30
 llvmlite==0.44.0
 lm-format-enforcer==0.10.12
