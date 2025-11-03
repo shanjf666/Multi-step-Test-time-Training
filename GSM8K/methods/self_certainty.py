@@ -125,19 +125,6 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
         cleaned_text = re.sub(r'<｜end▁of▁sentence｜>', '', cleaned_text)
         cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
 
-        # 仅使用 OpenAI 兼容接口抽取关键步骤
-        key_step_text = ""
-        try:
-            key_step_text = summarize_key_steps_openai(
-                client=key_api_client,
-                model=key_api_model,
-                reasoning_text=cleaned_text,
-                temperature=key_api_temp
-            )
-        except Exception as e:
-            print(f"[WARN] key-step extraction failed for sample {i}: {e}")
-            key_step_text = ""
-
         model_answer = extract_model_answer(response_text)
  
         # 更新统计
@@ -150,7 +137,6 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
         table.append({
             "question": question,
             "answer": cleaned_text,
-            "gpt_response": key_step_text,
             "max_confidence": step_confidence_scores[best_index],
             "correct": true_answer in clean_key_step_text[-10:] or is_correct_answer(model_answer, true_answer)
         })
@@ -169,7 +155,6 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
             print(f"清理后文本(保存的 answer): {cleaned_text}")
             print(f"最高置信度: {step_confidence_scores[best_index]:.4f}")
             print(f"是否正确: {is_correct_answer(model_answer, true_answer)}")
-            print(f"关键步骤(gpt_response): {key_step_text}")
             print("--- 结束调试信息 ---\n")
 
     # 打印评估结果
