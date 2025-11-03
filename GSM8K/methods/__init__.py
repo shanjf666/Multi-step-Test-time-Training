@@ -15,11 +15,13 @@ from methods.self_certainty import Self_Certainty_Selection
 from methods.self_eval import Self_Eval_Selection
 from methods.coe_c import CoE_C_Selection
 from methods.self_consistency import Self_Consistency_Selection
+from methods.entropy import Entropy_Selection
 
 __all__ = [
     'baseline_evaluation',
     'Self_Certainty_Selection',
     'Self_Eval_Selection',
     'CoE_C_Selection',
-    'Self_Consistency_Selection'
+    'Self_Consistency_Selection',
+    'Entropy_Selection'
 ]

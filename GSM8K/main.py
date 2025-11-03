@@ -25,7 +25,7 @@ from methods.self_eval import Self_Eval_Selection
 from methods.coe_c import CoE_C_Selection
 from methods.baseline import baseline_evaluation
 from methods.self_consistency import Self_Consistency_Selection
-
+from methods.entropy import Entropy_Selection
 
 def main():
     # 创建配置对象
@@ -44,8 +44,8 @@ def main():
 
     # 生成相关
     parser.add_argument("--method", default="self-certainty", 
-                        choices=["self-certainty", "self-eval", "coe-c", "baseline", "self-consistency"], 
-                        help="选择评估方法: self-certainty, self-eval, coe-c, baseline, self-consistency")
+                        choices=["self-certainty", "self-eval", "coe-c", "baseline", "self-consistency", "entropy"], 
+                        help="选择评估方法: self-certainty, self-eval, coe-c, baseline, self-consistency, entropy")
     parser.add_argument("--n_repetitive_sampling", default=4, type=int, help="为每个问题生成的解决方案数量")
     parser.add_argument("--temperature", default=0.1, type=float, help="生成时的温度参数，控制随机性")
     parser.add_argument("--top_p", default=1.0, type=float, help="Top-p采样参数")
@@ -181,6 +181,21 @@ def main():
             N=config.n,
             save_results=args.save_to_json
         )
+    elif args.method == "entropy":
+        Entropy_Selection(
+            dataset,
+            config=config,
+            model=model,
+            tokenizer=tokenizer,
+            device=device,
+            N=config.n,
+            save_results=args.save_to_json,
+            lambda_weight=config.lambda_weight,
+            key_api_client=key_client,
+            key_api_model=args.key_step_api_model,
+            key_api_temp=args.key_step_temperature
+        )
+        
 
     # 打印所有参数及其值
     print("########################################################################################")
