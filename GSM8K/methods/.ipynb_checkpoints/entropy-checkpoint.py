@@ -114,6 +114,7 @@ def Entropy_Selection(dataset, config, model, tokenizer, device,
         cleaned_text = cleaned_text.replace("</s>", "")
         cleaned_text = re.sub(r'<｜end▁of▁sentence｜>', '', cleaned_text)
         cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+        cleaned_text = re.sub(r'<|endoftext|>', '', cleaned_text)
 
         model_answer = extract_model_answer(response_text)
  

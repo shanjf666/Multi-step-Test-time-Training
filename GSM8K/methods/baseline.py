@@ -83,6 +83,7 @@ def baseline_evaluation(dataset, config, model, tokenizer, device, save_results=
         cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
         cleaned_text = re.sub(r'<｜end▁of▁sentence｜>', '', cleaned_text)
         cleaned_text = re.sub(r'</|end_of_text|', '', cleaned_text)
+        cleaned_text = re.sub(r'<|endoftext|>', '', cleaned_text)
         
         # 保存结果
         table.append({
