@@ -113,6 +113,7 @@ def CoE_C_Selection(dataset, config, model, tokenizer, device,
         cleaned_text = cleaned_text.replace("</s>", "")
         cleaned_text = re.sub(r'<｜end▁of▁sentence｜>', '', cleaned_text)
         cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+        cleaned_text = re.sub(r'<|endoftext|>', '', cleaned_text)
         
         # 使用 OpenAI 兼容接口抽取关键步骤
         key_step_text = ""
@@ -174,7 +175,7 @@ def CoE_C_Selection(dataset, config, model, tokenizer, device,
     # 如果需要保存结果，则写入JSON文件
     if save_results:
         os.makedirs("./TTT_data", exist_ok=True)
-        output_file = f"./TTT_data/Best_of_{N}_Transformers_Step_COE-C_lambda_{lambda_weight}_deepseek_key.json"
+        output_file = f"./TTT_data/CoE_C_best_of_{N}_lambda_{lambda_weight}_Qwen7B_MATH500.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
             json.dump({
                 "results": table,

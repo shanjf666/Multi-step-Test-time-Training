@@ -239,7 +239,7 @@ def Response_Certainty_Selection(dataset, config, model, tokenizer, device,
     # 写入JSON（每条为 {question, answer, extracted_answer}）
     if save_results:
         os.makedirs("./TTT_data", exist_ok=True)
-        output_file = f"./TTT_data/Self_Certainty_Trajectorylevel_level_best_of_{N}_Qwen7B_GSM8K.json"
+        output_file = f"./TTT_data/Self_Certainty_Trajectorylevel_best_of_{N}_Qwen7B_GSM8K.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
             json.dump({
                 "results": table,

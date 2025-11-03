@@ -83,6 +83,7 @@ def Self_Consistency_Selection(dataset, config, model, tokenizer, device, N=4, s
                 cleaned_text = cleaned_text.replace("<|end_of_sentence|>", "")
                 cleaned_text = cleaned_text.replace("</s>", "")
                 cleaned_text = re.sub(r'<｜end▁of▁sentence｜>', '', cleaned_text)
+                cleaned_text = re.sub(r'<|endoftext|>', '', cleaned_text)
                 cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
                 valid_candidates_cleaned.append(cleaned_text)
                 valid_candidates.append(response_text)
@@ -144,7 +145,7 @@ def Self_Consistency_Selection(dataset, config, model, tokenizer, device, N=4, s
     # 如果需要保存结果，则写入JSON文件
     if save_results:
         os.makedirs("./TTT_data", exist_ok=True)
-        output_file = f"./TTT_data/Best_of_{N}_Transformers_Self_Consistency_deepseek.json"
+        output_file = f"./TTT_data/Self_Consistency_best_of_{N}_lambda_{lambda_weight}_Qwen7B_MATH500.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
             json.dump({
                 "results": table,

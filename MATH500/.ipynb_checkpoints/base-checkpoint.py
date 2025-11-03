@@ -31,12 +31,12 @@ def main():
                         choices=["response-certainty"], 
                         help="选择评估方法: response-certainty")
     parser.add_argument("--n_repetitive_sampling", default=4, type=int, help="为每个问题生成的解决方案数量")
-    parser.add_argument("--temperature", default=0.1, type=float, help="生成时的温度参数，控制随机性")
+    parser.add_argument("--temperature", default=0.7, type=float, help="生成时的温度参数，控制随机性")
     parser.add_argument("--top_p", default=1.0, type=float, help="Top-p采样参数")
     parser.add_argument("--model_path", default="meta-llama/Llama-3.2-1B-Instruct", help="基础模型路径")
     parser.add_argument("--save_to_json", default=True, action="store_true", help="是否将结果保存到JSON文件")
     parser.add_argument("--dataset_repo_name", default="openai/gsm8k", help="数据集仓库名称")
-    parser.add_argument("--max_tokens", default=1024, type=int, help="最大生成标记数")
+    parser.add_argument("--max_tokens", default=512, type=int, help="最大生成标记数")
     parser.add_argument("--subset_size", default=None, type=int, help="测试子集大小（用于快速测试）")
 
     args = parser.parse_args()

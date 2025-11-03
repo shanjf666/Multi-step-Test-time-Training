@@ -84,6 +84,7 @@ def baseline_evaluation(dataset, config, model, tokenizer, device, save_results=
         cleaned_text = cleaned_text.replace("</s>", "")
         cleaned_text = re.sub(r'<｜end▁of▁sentence｜>', '', cleaned_text)
         cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+        cleaned_text = re.sub(r'<|endoftext|>', '', cleaned_text)
         
         # 保存结果
         table.append({
@@ -119,7 +120,7 @@ def baseline_evaluation(dataset, config, model, tokenizer, device, save_results=
     # 如果需要保存结果，则写入JSON文件
     if save_results:
         os.makedirs("./TTT_data", exist_ok=True)
-        output_file = f"./TTT_data/baseline_deepseek_7b.json"
+        output_file = f"./TTT_data/Baseline_Qwen7B_MATH500.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
             json.dump({
                 "results": table,

@@ -194,6 +194,7 @@ def Response_Certainty_Selection(dataset, config, model, tokenizer, device,
         cleaned_text = cleaned_text.replace("</s>", "")
         cleaned_text = re.sub(r'<｜end▁of▁sentence｜>', '', cleaned_text)
         cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+        cleaned_text = re.sub(r'<|endoftext|>', '', cleaned_text)
 
         # 直接从模型输出中提取答案
         model_answer = extract_model_answer(response_text)
@@ -239,7 +240,7 @@ def Response_Certainty_Selection(dataset, config, model, tokenizer, device,
     # 写入JSON（每条为 {question, answer, extracted_answer}）
     if save_results:
         os.makedirs("./TTT_data", exist_ok=True)
-        output_file = f"./TTT_data/Best_of_{N}_Transformers_Response_Certainty.json"
+        output_file = f"./TTT_data/Self_Certainty_Trajectorylevel_best_of_{N}_lambda_{lambda_weight}_Qwen7B_MATH500.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
             json.dump(table, file, indent=4, ensure_ascii=False)
         print(f"Results saved to {output_file}")
