@@ -154,7 +154,7 @@ def Self_Eval_Selection(dataset, config, model, tokenizer, device,
     # 如果需要保存结果，则写入JSON文件
     if save_results:
         os.makedirs("./TTT_data", exist_ok=True)
-        output_file = f"./TTT_data/Best_of_{N}_Transformers_Step_SelfEval_lambda_{lambda_weight}_deepseek_7b_key.json"
+        output_file = f"./TTT_data/Self_Eval_best_of_{N}_lambda_{lambda_weight}_Qwen7B_GSM8K.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
             json.dump({
                 "results": table,

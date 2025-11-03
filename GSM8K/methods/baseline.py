@@ -87,12 +87,9 @@ def baseline_evaluation(dataset, config, model, tokenizer, device, save_results=
         
         # 保存结果
         table.append({
-            "ID": index+1, 
-            "model_input": question, 
-            "output": [cleaned_text],
-            "model_answer": model_answer,  
-            "true_answer": true_answer,
-            "is_correct": is_correct
+            "question": question,
+            "answer": cleaned_text,
+            "correct": is_correct_answer(model_answer, true_answer)
         })
         index += 1
                 
@@ -121,7 +118,7 @@ def baseline_evaluation(dataset, config, model, tokenizer, device, save_results=
     # 如果需要保存结果，则写入JSON文件
     if save_results:
         os.makedirs("./TTT_data", exist_ok=True)
-        output_file = f"./TTT_data/baseline_deepseek_7b.json"
+        output_file = f"./TTT_data/Baseline_Qwen7B_GSM8K.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
             json.dump({
                 "results": table,

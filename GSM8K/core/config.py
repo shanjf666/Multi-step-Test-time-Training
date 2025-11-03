@@ -61,9 +61,9 @@ class Config:
 
             """
         )
-        self.temperature = 0.1
+        self.temperature = 0.7
         self.top_p = 1.0
-        self.max_tokens = 512
+        self.max_tokens = 1024
         self.n = 4
         self.lambda_weight = 0.5
         self.confidence_threshold = -float('inf')

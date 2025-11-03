@@ -100,14 +100,10 @@ def Self_Consistency_Selection(dataset, config, model, tokenizer, device, N=4, s
 
         # 保存结果
         table.append({
-            "ID": index+1, 
-            "model_input": question, 
-            "outputs": valid_candidates,  # 保存所有生成的结果
-            "extracted_answers": candidate_answers,  # 保存所有提取的答案
-            "model_answer": model_answer,  
-            "true_answer": true_answer,
-            "answer_counts": dict(answer_counter),  # 保存答案统计
-            "is_correct": is_correct_answer(model_answer, true_answer)
+            "question": question,
+            "answer": cleaned_text,
+            "max_confidence": step_confidence_scores[best_index],
+            "correct": is_correct_answer(model_answer, true_answer)
         })
         index += 1
                 
@@ -136,7 +132,7 @@ def Self_Consistency_Selection(dataset, config, model, tokenizer, device, N=4, s
     # 如果需要保存结果，则写入JSON文件
     if save_results:
         os.makedirs("./TTT_data", exist_ok=True)
-        output_file = f"./TTT_data/Best_of_{N}_Transformers_Self_Consistency_deepseek.json"
+        output_file = f"./TTT_data/Self_Consistency_best_of_{N}_Qwen7B_GSM8K.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
             json.dump({
                 "results": table,

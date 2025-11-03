@@ -61,7 +61,7 @@ class Config:
 
             """
         )
-        self.temperature = 0.1
+        self.temperature = 0.7
         self.top_p = 1.0
         self.max_tokens = 512
         self.n = 4

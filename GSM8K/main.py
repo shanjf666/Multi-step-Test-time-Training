@@ -1,9 +1,16 @@
 """
 export OPENAI_API_KEY='sk-szeemiuaxtqymzkkpaezgadntxpajxwyhrzofzsodywqngqz'
-python main.py --method entropy --model_path Qwen/Qwen2.5-Math-7B-Instruct --temperature 0.7 --max_tokens 1024 --confidence_threshold 4.9  --lambda_weight 0.5 --n_repetitive_sampling 4 --subset_size 100 --max_tokens 1024
+python main.py --method entropy --max_tokens 1024 --confidence_threshold 4.9  --lambda_weight 0.5 --n_repetitive_sampling 4 --subset_size 100 --max_tokens 1024
 python main.py --method baseline --model_path Qwen/Qwen2.5-Math-7B-Instruct --temperature 0.7
 python main.py --method self-certainty --max_tokens 1024 --model_path /root/autodl-tmp/data/models/modelscope_cache/models/lijia321/gsm8k_filtered_step_similarity_0___35_unnormalized
 python main.py --method self-certainty --max_tokens 1024 --model_path /root/autodl-tmp/data/models/modelscope_cache/models/lijia321/gsm8k_labeled_step_reward --n_repetitive_sampling 1
+python main.py --method self-certainty
+python main.py --method self-eval
+python main.py --method coe-c
+python main.py --method baseline
+python main.py --method self-consistency
+python main.py --method entropy
+
 """
 
 import os
@@ -47,9 +54,9 @@ def main():
                         choices=["self-certainty", "self-eval", "coe-c", "baseline", "self-consistency", "entropy"], 
                         help="选择评估方法: self-certainty, self-eval, coe-c, baseline, self-consistency, entropy")
     parser.add_argument("--n_repetitive_sampling", default=4, type=int, help="为每个问题生成的解决方案数量")
-    parser.add_argument("--temperature", default=0.1, type=float, help="生成时的温度参数，控制随机性")
+    parser.add_argument("--temperature", default=0.7, type=float, help="生成时的温度参数，控制随机性")
     parser.add_argument("--top_p", default=1.0, type=float, help="Top-p采样参数")
-    parser.add_argument("--model_path", default="meta-llama/Llama-3.2-1B-Instruct", help="基础模型路径")
+    parser.add_argument("--model_path", default="Qwen/Qwen2.5-Math-7B-Instruct", help="基础模型路径")
     parser.add_argument("--save_to_json", default=True, action="store_true", help="是否将结果保存到JSON文件")
     parser.add_argument("--dataset_repo_name", default="openai/gsm8k", help="数据集仓库名称")
     parser.add_argument("--max_tokens", default=512, type=int, help="最大生成标记数")

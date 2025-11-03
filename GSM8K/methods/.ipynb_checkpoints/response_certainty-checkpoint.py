@@ -206,9 +206,9 @@ def Response_Certainty_Selection(dataset, config, model, tokenizer, device,
         # 保存为三字段格式
         table.append({
             "question": question,
-            "model_answer": model_answer,
-            "groung_truth": true_answer,
-            "model_answer_raw": response_text
+            "answer": cleaned_text,
+            "max_confidence": response_confidence_scores[best_index],
+            "correct": is_correct_answer(model_answer, true_answer)
         })
         index += 1
 
@@ -239,7 +239,10 @@ def Response_Certainty_Selection(dataset, config, model, tokenizer, device,
     # 写入JSON（每条为 {question, answer, extracted_answer}）
     if save_results:
         os.makedirs("./TTT_data", exist_ok=True)
-        output_file = f"./TTT_data/Best_of_{N}_Transformers_Response_Certainty.json"
+        output_file = f"./TTT_data/Self_Certainty_Trajectorylevel_level_best_of_{N}_Qwen7B_GSM8K.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
-            json.dump(table, file, indent=4, ensure_ascii=False)
+            json.dump({
+                "results": table,
+                "accuracy": accuracy
+            }, file, indent=4, ensure_ascii=False)
         print(f"Results saved to {output_file}")
