@@ -291,7 +291,7 @@ def calculate_step_confidence_with_entropy(prompt_ids, response_ids, logits, tok
 
         if step_entropies:
             # 计算步骤的平均熵并归一化得到置信度（熵越低，置信度越高）
-            avg_entropy = sum(step_entropies) / len(step_entropies)
+            avg_entropy = min(step_entropies)
             normalized_entropy = avg_entropy / max_entropy.item()
             step_confidence_entropy = 1.0 - normalized_entropy  # 熵置信度
             
