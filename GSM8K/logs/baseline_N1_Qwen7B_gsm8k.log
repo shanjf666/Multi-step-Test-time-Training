@@ -1,0 +1,30 @@
+Using device: cuda
+正在加载语言模型...
+Loading checkpoint shards:   0%|                                                                                                                                                                                                                                                             | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|█████████████████████████████████████████████████████████████▎                                                                                                                                                                                       | 1/4 [00:00<00:01,  2.63it/s]Loading checkpoint shards:  50%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                                                                                          | 2/4 [00:00<00:00,  2.71it/s]Loading checkpoint shards:  75%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                             | 3/4 [00:01<00:00,  2.67it/s]Loading checkpoint shards: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:01<00:00,  2.56it/s]Loading checkpoint shards: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:01<00:00,  2.60it/s]
+Traceback (most recent call last):
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/main.py", line 217, in <module>
+    main()
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/main.py", line 104, in main
+    ).to(device)
+      ^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/modeling_utils.py", line 4341, in to
+    return super().to(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1355, in to
+    return self._apply(convert)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 915, in _apply
+    module._apply(fn)
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 915, in _apply
+    module._apply(fn)
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 942, in _apply
+    param_applied = fn(param)
+                    ^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1341, in convert
+    return t.to(
+           ^^^^^
+RuntimeError: CUDA error: out of memory
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+

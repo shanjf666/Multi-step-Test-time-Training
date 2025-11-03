@@ -25,7 +25,7 @@ get_free_gpu() {
      } END {print id}'
 }
 
-# 等待空闲GPU出现
+# 等待空闲GPU出现z
 wait_for_free_gpu() {
     while true; do
         running_jobs=$(jobs -r | wc -l)

@@ -248,6 +248,76 @@ def calculate_step_confidence_with_self_certainty(prompt_ids, response_ids, logi
         final_confidence = 0.0
     return final_confidence
 
+def calculate_step_confidence_with_entropy(prompt_ids, response_ids, logits, tokenizer, lambda_weight=0.5):
+    """
+    使用基于熵的方法计算步骤级置信度
+    返回：所有步骤置信度的平均值。
+    """
+    response_text = tokenizer.decode(response_ids, skip_special_tokens=True)
+    steps = parse_structured_steps(response_text)
+
+    prompt_length = len(prompt_ids)
+    # -1 因为 logits[t] 预测的是下一个 token
+    response_logits = logits[prompt_length - 1:-1, :]
+
+    # 计算概率和熵
+    probs = F.softmax(response_logits, dim=-1)
+    log_probs = F.log_softmax(response_logits, dim=-1)
+    entropy = -(probs * log_probs).sum(dim=-1)
+    
+    # 最大熵（用于归一化）
+    vocab_size = logits.shape[-1]
+    max_entropy = torch.log(torch.tensor(vocab_size, dtype=torch.float))
+
+    step_confidences = []
+    token_index = 0
+
+    for step_text in steps:
+        if not step_text.strip():
+            continue
+
+        step_tokens = tokenizer.encode(step_text, add_special_tokens=False)
+        step_length = len(step_tokens)
+        if token_index + step_length > len(response_ids):
+            step_length = len(response_ids) - token_index
+        if step_length <= 0:
+            continue
+
+        step_cumulative_logprob = 0.0
+        step_entropies = []
+
+        for i in range(step_length):
+            if token_index + i < len(response_ids) and token_index + i < len(log_probs):
+                actual_token_id = response_ids[token_index + i].item()
+                token_log_probs = log_probs[token_index + i]
+                step_cumulative_logprob += token_log_probs[actual_token_id].item()
+                # 收集该步骤的所有token熵值
+                if token_index + i < len(entropy):
+                    step_entropies.append(entropy[token_index + i].item())
+
+        if step_entropies:
+            # 计算步骤的最小熵并归一化得到置信度（熵越低，置信度越高）
+            avg_entropy = min(step_entropies)
+            normalized_entropy = avg_entropy / max_entropy.item()
+            step_confidence_entropy = 1.0 - normalized_entropy  # 熵置信度
+            
+            # 计算步骤概率
+            step_cumulative_logprob /= step_length
+            step_probability = np.exp(step_cumulative_logprob)
+            
+            step_confidence = (step_confidence_entropy ** (1 - lambda_weight)) * (step_probability ** lambda_weight)
+            step_confidences.append(step_confidence)
+
+        token_index += step_length
+
+    final_confidence = 0.0
+    for conf in step_confidences:
+        final_confidence += conf
+    if len(step_confidences) > 0:
+        final_confidence /= len(step_confidences)
+    else:
+        final_confidence = 0.0
+    return final_confidence
 
 def calculate_step_confidence_with_self_eval(prompt_ids, response_ids, logits, tokenizer, lambda_weight=0.5, 
                                              eval_model=None, question="", device=None, steps=None):

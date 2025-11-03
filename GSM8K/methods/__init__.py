@@ -10,18 +10,29 @@ This module contains implementations of different Test-Time Training methods inc
 """
 
 # 将相对导入改为绝对导入
-from methods.baseline import baseline_evaluation
-from methods.self_certainty import Self_Certainty_Selection
-from methods.self_eval import Self_Eval_Selection
-from methods.coe_c import CoE_C_Selection
-from methods.self_consistency import Self_Consistency_Selection
-from methods.entropy import Entropy_Selection
+from utils.common import (
+    parse_structured_steps,
+    extract_model_answer,
+    is_correct_answer,
+    generate_with_transformers,
+    calculate_step_confidence_with_self_certainty,
+    calculate_step_confidence_with_self_eval,
+    calculate_step_confidence_with_CoE_C,
+    calculate_step_confidence_with_entropy  # 添加这一行
+)
+
+from utils.key_step_extractor import (
+    summarize_key_steps_openai
+)
 
 __all__ = [
-    'baseline_evaluation',
-    'Self_Certainty_Selection',
-    'Self_Eval_Selection',
-    'CoE_C_Selection',
-    'Self_Consistency_Selection',
-    'Entropy_Selection'
+    'parse_structured_steps',
+    'extract_model_answer',
+    'is_correct_answer',
+    'generate_with_transformers',
+    'calculate_step_confidence_with_self_certainty',
+    'calculate_step_confidence_with_self_eval',
+    'calculate_step_confidence_with_CoE_C',
+    'calculate_step_confidence_with_entropy',  # 添加这一行
+    'summarize_key_steps_openai'
 ]

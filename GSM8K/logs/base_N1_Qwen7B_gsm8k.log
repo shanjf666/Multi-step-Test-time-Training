@@ -1,0 +1,29 @@
+Using device: cuda
+正在加载语言模型...
+Loading checkpoint shards:   0%|                                                                                                                                                                                                                                                             | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|█████████████████████████████████████████████████████████████▎                                                                                                                                                                                       | 1/4 [00:00<00:01,  2.44it/s]Loading checkpoint shards:  50%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                                                                                          | 2/4 [00:00<00:00,  2.46it/s]Loading checkpoint shards:  75%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                             | 3/4 [00:01<00:00,  1.87it/s]Loading checkpoint shards: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:03<00:00,  1.02s/it]Loading checkpoint shards: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:03<00:00,  1.22it/s]
+Traceback (most recent call last):
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/base.py", line 107, in <module>
+    main()
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/base.py", line 61, in main
+    ).to(device)
+      ^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/modeling_utils.py", line 4341, in to
+    return super().to(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1355, in to
+    return self._apply(convert)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 915, in _apply
+    module._apply(fn)
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 915, in _apply
+    module._apply(fn)
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 915, in _apply
+    module._apply(fn)
+  [Previous line repeated 2 more times]
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 942, in _apply
+    param_applied = fn(param)
+                    ^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1341, in convert
+    return t.to(
+           ^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 130.00 MiB. GPU 0 has a total capacity of 47.37 GiB of which 125.44 MiB is free. Process 2029 has 20.69 GiB memory in use. Process 2070 has 23.01 GiB memory in use. Including non-PyTorch memory, this process has 3.52 GiB memory in use. Process 5357 has 12.00 MiB memory in use. Of the allocated memory 3.24 GiB is allocated by PyTorch, and 3.88 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
