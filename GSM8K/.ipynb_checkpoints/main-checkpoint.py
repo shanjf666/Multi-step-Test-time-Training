@@ -1,6 +1,6 @@
 """
 export OPENAI_API_KEY='sk-szeemiuaxtqymzkkpaezgadntxpajxwyhrzofzsodywqngqz'
-python main.py --method self-certainty --model_path Qwen/Qwen2.5-Math-7B-Instruct --temperature 0.7 --max_tokens 1024 --confidence_threshold 4.9  --lambda_weight 0.5 --n_repetitive_sampling 4 --subset_size 100 --max_tokens 1024
+python main.py --method coe-c --model_path Qwen/Qwen2.5-Math-7B-Instruct --temperature 0.7 --max_tokens 1024 --confidence_threshold 4.9  --lambda_weight 0.5 --n_repetitive_sampling 4 --subset_size 100 --max_tokens 1024
 python main.py --method baseline --model_path Qwen/Qwen2.5-Math-7B-Instruct --temperature 0.7
 python main.py --method self-certainty --max_tokens 1024 --model_path /root/autodl-tmp/data/models/modelscope_cache/models/lijia321/gsm8k_filtered_step_similarity_0___35_unnormalized
 python main.py --method self-certainty --max_tokens 1024 --model_path /root/autodl-tmp/data/models/modelscope_cache/models/lijia321/gsm8k_labeled_step_reward --n_repetitive_sampling 1

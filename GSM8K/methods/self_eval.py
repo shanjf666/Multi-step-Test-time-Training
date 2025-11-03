@@ -13,7 +13,8 @@ from utils.common import (
     extract_model_answer, 
     is_correct_answer,
     generate_with_transformers,
-    calculate_step_confidence_with_self_eval
+    calculate_step_confidence_with_self_eval,
+    clean_latex_format
 )
 from utils.key_step_extractor import summarize_key_steps_openai
 
@@ -42,7 +43,11 @@ def Self_Eval_Selection(dataset, config, model, tokenizer, device,
             true_answer = data['answer'].strip()
             
         question = data['question']
-        prompt = f"<|begin_of_text|>{config.system_prompt}\nQuestion: {question}\nAnswer:"
+        
+        prompt = tokenizer.apply_chat_template(
+            [{"role": "user", "content": f"{config.system_prompt}Q: {question}\n\nA:"}],
+            tokenize=False, add_generation_prompt=True
+        )
 
         try:
             candidates = generate_with_transformers(

@@ -6,36 +6,59 @@ class Config:
     def __init__(self):
         self.system_prompt = (
             """
-                Question: There are 15 trees in the grove. Grove workers will plant trees in the grove today. After they are done, there will be 21 trees. How many trees did the grove workers plant today?
-                Answer: ## Step1: There are 15 trees originally. ## Step2: Then there were 21 trees after some more were planted. ## Step3: So there must have been 21 - 15 = 6. The answer is 6.
-                
-                
-                Question: If there are 3 cars in the parking lot and 2 more cars arrive, how many cars are in the parking lot?
-                Answer: ## Step1: There are originally 3 cars. ## Step2: 2 more cars arrive. ## Step3: 3 + 2 = 5. The answer is 5.
-                
-                
-                Question: Leah had 32 chocolates and her sister had 42. If they ate 35, how many pieces do they have left in total?
-                Answer: ## Step1: Originally, Leah had 32 chocolates. ## Step2: Her sister had 42. ## Step3: So in total they had 32 + 42 = 74. ## Step4: After eating 35, they had 74 - 35 = 39. The answer is 39.
-                
-                
-                Question: Jason had 20 lollipops. He gave Denny some lollipops. Now Jason has 12 lollipops. How many lollipops did Jason give to Denny?
-                Answer: ## Step1: Jason started with 20 lollipops. ## Step2: Then he had 12 after giving some to Denny. ## Step3: So he gave Denny 20 - 12 = 8. The answer is 8.
-                
-                
-                Question: Shawn has five toys. For Christmas, he got two toys each from his mom and dad. How many toys does he have now?
-                Answer: ## Step1: Shawn started with 5 toys. ## Step2: If he got 2 toys each from his mom and dad, then that is 4 more toys. ## Step3: 5 + 4 = 9. The answer is 9.
-                
-                
-                Question: There were nine computers in the server room. Five more computers were installed each day, from monday to thursday. How many computers are now in the server room?
-                Answer: ## Step1: There were originally 9 computers. ## Step2: For each of 4 days, 5 more computers were added. ## Step3: So 5 * 4 = 20 computers were added. ## Step4: 9 + 20 is 29. The answer is 29.
-                
-                
-                Question: Michael had 58 golf balls. On tuesday, he lost 23 golf balls. On wednesday, he lost 2 more. How many golf balls did he have at the end of wednesday?
-                Answer: ## Step1: Michael started with 58 golf balls. ## Step2: After losing 23 on tuesday, he had 58 - 23 = 35. ## Step3: After losing 2 more, he had 35 - 2 = 33 golf balls. The answer is 33.
-                
-                
-                Question: Olivia has $23. She bought five bagels for $3 each. How much money does she have left?
-                Answer: ## Step1: Olivia had 23 dollars. ## Step2: 5 bagels for 3 dollars each will be 5 x 3 = 15 dollars. ## Step3: So she has 23 - 15 dollars left. 23 - 15 is 8. The answer is 8.
+            You are a math reasoning assistant. Solve each question carefully, showing clear step-by-step reasoning before giving the final numeric answer.  
+            End each solution with the final numeric answer as: #### {final_number}
+            
+            Example 1:
+            Q: A bakery sells muffins for $3 each and cupcakes for $2 each. If a customer buys 4 muffins and 6 cupcakes, how much does she spend in total?
+            A: Each muffin costs $3, and she buys 4 muffins, so muffin cost = 4 × 3 = $12.  
+            Each cupcake costs $2, and she buys 6 cupcakes, so cupcake cost = 6 × 2 = $12.  
+            Total cost = 12 + 12 = $24.  
+            #### 24
+            
+            Example 2:
+            Q: A bus can carry 40 passengers. If there are 8 buses, and 10 seats are empty on each bus, how many passengers are on all the buses combined?
+            A: Each bus has 40 seats, but 10 are empty, so there are 40 - 10 = 30 passengers per bus.  
+            With 8 buses, total passengers = 8 × 30 = 240.  
+            #### 240
+            
+            Example 3:
+            Q: There are 5 boxes, and each box contains 12 apples. If 15 apples are eaten, how many apples remain?
+            A: Total apples initially = 5 × 12 = 60.  
+            After 15 apples are eaten, remaining = 60 - 15 = 45.  
+            #### 45
+            
+            Example 4:
+            Q: A train travels 80 miles in 2 hours. What is its average speed in miles per hour?
+            A: Speed = distance ÷ time = 80 ÷ 2 = 40 mph.  
+            #### 40
+            
+            Example 5:
+            Q: A rectangle has a length of 10 cm and width of 4 cm. What is its area?
+            A: Area = length × width = 10 × 4 = 40 square cm.  
+            #### 40
+            
+            Example 6:
+            Q: Sarah buys 3 notebooks costing $5 each and 2 pens costing $2 each. How much does she spend in total?
+            A: Notebook cost = 3 × 5 = $15.  
+            Pen cost = 2 × 2 = $4.  
+            Total = 15 + 4 = $19.  
+            #### 19
+            
+            Example 7:
+            Q: A tank holds 500 liters of water. If 120 liters are drained out and 80 liters are added, how much water is now in the tank?
+            A: Start with 500 liters.  
+            Drain 120 liters → 500 - 120 = 380 liters.  
+            Add 80 liters → 380 + 80 = 460 liters.  
+            #### 460
+            
+            Example 8:
+            Q: John reads 20 pages of a book each day. If the book has 180 pages, how many days will it take him to finish it?
+            A: Days = total pages ÷ pages per day = 180 ÷ 20 = 9 days.  
+            #### 9
+            
+            Now, solve the following problem step by step and end with the numeric answer in the same format:
+
             """
         )
         self.temperature = 0.1

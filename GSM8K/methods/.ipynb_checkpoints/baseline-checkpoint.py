@@ -48,7 +48,10 @@ def baseline_evaluation(dataset, config, model, tokenizer, device, save_results=
         question = data['question']
         
         # 构建提示格式
-        prompt = f"<|begin_of_text|>{config.system_prompt}\nQuestion: {question}\nAnswer:"
+        prompt = tokenizer.apply_chat_template(
+            [{"role": "user", "content": f"{config.system_prompt}Q: {question}\n\nA:"}],
+            tokenize=False, add_generation_prompt=True
+        )
 
         # 生成1个候选答案
         try:

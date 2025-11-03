@@ -57,8 +57,11 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
         #     [{"role": "user", "content": f"Question: {question}\nLet's think step by step and output the final answer after '####'.\n"}],
         #     tokenize=False, add_generation_prompt=True
         # )
-        prompt = f"Question: {question}\nLet's think step by step and output the final answer after '####'.\n"
-
+        # prompt = f"Question: {question}\nLet's think step by step and output the final answer after '####'.\n"
+        prompt = tokenizer.apply_chat_template(
+            [{"role": "user", "content": f"{config.system_prompt}Q: {question}\n\nA:"}],
+            tokenize=False, add_generation_prompt=True
+        )
 
         # 生成 N 个候选
         try:

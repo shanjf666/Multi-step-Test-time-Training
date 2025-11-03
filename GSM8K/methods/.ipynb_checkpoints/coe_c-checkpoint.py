@@ -13,7 +13,8 @@ from utils.common import (
     extract_model_answer, 
     is_correct_answer,
     generate_with_transformers,
-    calculate_step_confidence_with_CoE_C
+    calculate_step_confidence_with_CoE_C,
+    clean_latex_format
 )
 from utils.key_step_extractor import summarize_key_steps_openai
 
@@ -47,8 +48,21 @@ def CoE_C_Selection(dataset, config, model, tokenizer, device,
         question = data['question']
         
         # 构建提示格式
-        prompt = f"<|begin_of_text|>{config.system_prompt}\nQuestion: {question}\nAnswer:"
-
+        # prompt = tokenizer.apply_chat_template(
+        #     [{"role": "system", "content": config.system_prompt},
+        #      {"role": "user", "content": f"Question: {question}\n\n\nAnswer:"}],
+        #     tokenize=False, add_generation_prompt=True
+        # )
+        # prompt = tokenizer.apply_chat_template(
+        #     [{"role": "user", "content": f"Question: {question}\nLet's think step by step and output the final answer after '####'.\n"}],
+        #     tokenize=False, add_generation_prompt=True
+        # )
+        # prompt = f"Question: {question}\nLet's think step by step and output the final answer after '####'.\n"
+        prompt = tokenizer.apply_chat_template(
+            [{"role": "user", "content": f"{config.system_prompt}Q: {question}\n\nA:"}],
+            tokenize=False, add_generation_prompt=True
+        )
+        
         # 生成N个候选答案
         try:
             candidates = generate_with_transformers(
@@ -112,37 +126,44 @@ def CoE_C_Selection(dataset, config, model, tokenizer, device,
         cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
         cleaned_text = re.sub(r'<｜end▁of▁sentence｜>', '', cleaned_text)
         cleaned_text = re.sub(r'</|end_of_text|', '', cleaned_text)
+        cleaned_text = re.sub(r'<|endoftext|>', '', cleaned_text)
         
-        # 使用 OpenAI 兼容接口抽取关键步骤
-        key_step_text = ""
-        try:
-            key_step_text = summarize_key_steps_openai(
-                client=key_api_client,
-                model=key_api_model,
-                reasoning_text=cleaned_text,
-                temperature=key_api_temp
-            )
-        except Exception as e:
-            print(f"[WARN] key-step extraction failed for sample {i}: {e}")
-            key_step_text = ""
+        
+        # 仅使用 OpenAI 兼容接口抽取关键步骤
+        # key_step_text = ""
+        # try:
+        #     key_step_text = summarize_key_steps_openai(
+        #         client=key_api_client,
+        #         model=key_api_model,
+        #         reasoning_text=cleaned_text,
+        #         temperature=key_api_temp
+        #     )
+        # except Exception as e:
+        #     print(f"[WARN] key-step extraction failed for sample {i}: {e}")
+        #     key_step_text = ""
 
-        model_answer = extract_model_answer(response_text)
+        # if key_step_text.strip():
+        #     model_answer = extract_model_answer(key_step_text)
+        # else:
+        #     # 回退策略（可按需只留一个回退）
+        #     model_answer = extract_model_answer(response_text)
         
-        # 检查答案是否正确
+        model_answer = extract_model_answer(response_text)
+
+        # 更新统计
         n_samples += 1
-        clean_key_step_text = clean_latex_format(response_text)
+        # clean_key_step_text = clean_latex_format(key_step_text)
+        clean_key_step_text = clean_latex_format(cleaned_text)
+        model_answer = clean_latex_format(model_answer)
         if true_answer in clean_key_step_text[-10:] or is_correct_answer(model_answer, true_answer):
             n_true_ans += 1
 
-        # 保存结果
+        # 保存为三字段格式
         table.append({
             "question": question,
             "answer": cleaned_text,
-            "gpt_response": key_step_text,
-            "max_confidence": step_confidence_scores[best_index],
-            "correct": true_answer in clean_key_step_text[-10:] or is_correct_answer(model_answer, true_answer)
+            # "gpt_response": key_step_text
         })
-        index += 1
                 
         # 更新进度条显示
         acc_display = f"{(n_true_ans / n_samples):.4f}" if n_samples > 0 else "0.0000"
@@ -157,7 +178,7 @@ def CoE_C_Selection(dataset, config, model, tokenizer, device,
             print(f"清理后文本(保存的 answer): {cleaned_text[:500]}")
             print(f"最高置信度: {step_confidence_scores[best_index]:.4f}")
             print(f"是否正确: {is_correct_answer(model_answer, true_answer)}")
-            print(f"关键步骤(gpt_response): {key_step_text}")
+            # print(f"关键步骤(gpt_response): {key_step_text}")
             print("--- 结束调试信息 ---\n")
     
     # 计算并打印评估结果
