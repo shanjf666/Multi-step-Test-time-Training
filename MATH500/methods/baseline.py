@@ -73,7 +73,7 @@ def baseline_evaluation(dataset, config, model, tokenizer, device, save_results=
         # 检查答案是否正确
         n_samples += 1
         clean_response_text = clean_latex_format(response_text)
-        if true_answer in clean_response_text[-30:] or is_correct_answer(model_answer, true_answer):
+        if true_answer in clean_response_text[-10:] or is_correct_answer(model_answer, true_answer):
             n_true_ans += 1
 
         # 清理控制标记（注意不要用含空分支的正则）
@@ -90,7 +90,6 @@ def baseline_evaluation(dataset, config, model, tokenizer, device, save_results=
         table.append({
             "question": question,
             "answer": cleaned_text,
-            "gpt_response": ""
         })
         index += 1
                 
@@ -104,9 +103,9 @@ def baseline_evaluation(dataset, config, model, tokenizer, device, save_results=
             print(f"问题: {question}")
             print(f"答案：{data['answer']}")
             print(f"提取后的答案: {true_answer}")
-            print(f"关键步骤(gpt_response): ")
+            print(f"清理后文本(保存的 answer): {clean_response_text}")
             print(f"模型答案(提取): {model_answer}")
-            print(f"是否正确: {true_answer in clean_response_text[-30:] or is_correct_answer(model_answer, true_answer)}")
+            print(f"是否正确: {true_answer in clean_response_text[-10:] or is_correct_answer(model_answer, true_answer)}")
             print("--- 结束调试信息 ---\n")
     
     # 计算并打印评估结果
