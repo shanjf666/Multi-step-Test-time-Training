@@ -1,0 +1,89 @@
+Using device: cuda
+正在加载语言模型...
+Loading checkpoint shards:   0%|                                                                                                                                                                                                    | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|███████████████████████████████████████████████                                                                                                                                             | 1/4 [00:00<00:02,  1.08it/s]Loading checkpoint shards:  50%|██████████████████████████████████████████████████████████████████████████████████████████████                                                                                              | 2/4 [00:02<00:02,  1.18s/it]Loading checkpoint shards:  75%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                               | 3/4 [00:03<00:00,  1.02it/s]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:03<00:00,  1.31it/s]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:03<00:00,  1.16it/s]
+语言模型加载完成!
+正在加载数据集...
+{'question': "Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?", 'answer': 'Janet sells 16 - 3 - 4 = <<16-3-4=9>>9 duck eggs a day.\nShe makes 9 * 2 = $<<9*2=18>>18 every day at the farmer’s market.\n#### 18'}
+数据集加载完成，共5个样本
+开始执行基于步骤的置信度评估...
+Processing: 0it [00:00, ?it/s]Processing: 1it [00:20, 20.41s/it]Processing: 2it [00:32, 15.30s/it]Processing: 2it [00:41, 20.55s/it]
+Error generating candidates for sample 0: CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacity of 31.47 GiB of which 17.31 MiB is free. Process 155308 has 15.30 GiB memory in use. Including non-PyTorch memory, this process has 16.14 GiB memory in use. Of the allocated memory 15.28 GiB is allocated by PyTorch, and 577.70 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Error generating candidates for sample 1: CUDA out of memory. Tried to allocate 40.00 MiB. GPU 0 has a total capacity of 31.47 GiB of which 29.31 MiB is free. Process 155308 has 15.31 GiB memory in use. Including non-PyTorch memory, this process has 16.12 GiB memory in use. Of the allocated memory 15.56 GiB is allocated by PyTorch, and 273.58 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/main.py", line 217, in <module>
+    main()
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/main.py", line 182, in main
+    Self_Consistency_Selection(
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/methods/self_consistency.py", line 60, in Self_Consistency_Selection
+    candidates = generate_with_transformers(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/utils/common.py", line 156, in generate_with_transformers
+    outputs = model.generate(input_ids, **generate_kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/generation/utils.py", line 2629, in generate
+    result = self._sample(
+             ^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/generation/utils.py", line 3603, in _sample
+    model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/generation/utils.py", line 683, in prepare_inputs_for_generation
+    (cu_seq_lens_q, cu_seq_lens_k), (max_length_q, max_length_k) = prepare_fa_kwargs_from_position_ids(
+                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/modeling_flash_attention_utils.py", line 351, in prepare_fa_kwargs_from_position_ids
+    max_length_q = int(q_len.max())
+                       ^^^^^^^^^^^
+KeyboardInterrupt
+Using device: cuda
+正在加载语言模型...
+Loading checkpoint shards:   0%|                                                                                                                                                                                                    | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|███████████████████████████████████████████████                                                                                                                                             | 1/4 [00:00<00:01,  2.63it/s]Loading checkpoint shards:  50%|██████████████████████████████████████████████████████████████████████████████████████████████                                                                                              | 2/4 [00:00<00:00,  2.88it/s]Loading checkpoint shards:  75%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                               | 3/4 [00:01<00:00,  2.17it/s]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:01<00:00,  2.18it/s]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:01<00:00,  2.28it/s]
+语言模型加载完成!
+正在加载数据集...
+{'question': "Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?", 'answer': 'Janet sells 16 - 3 - 4 = <<16-3-4=9>>9 duck eggs a day.\nShe makes 9 * 2 = $<<9*2=18>>18 every day at the farmer’s market.\n#### 18'}
+数据集加载完成，共2个样本
+开始执行基于步骤的置信度评估...
+Processing: 0it [00:00, ?it/s]Processing: 0it [00:10, ?it/s, accuracy=1.0000]Processing: 1it [00:10, 10.68s/it, accuracy=1.0000]Processing: 1it [00:17, 10.68s/it, accuracy=1.0000]Processing: 2it [00:17,  8.43s/it, accuracy=1.0000]Processing: 2it [00:17,  8.77s/it, accuracy=1.0000]
+
+--- 样本 1 调试信息 ---
+问题: Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?
+真实答案: 18
+模型答案: 18
+答案统计: {'18': 4}
+是否正确: True
+--- 结束调试信息 ---
+
+
+--- 样本 2 调试信息 ---
+问题: A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolts in total does it take?
+真实答案: 3
+模型答案: 3
+答案统计: {'3': 4}
+是否正确: True
+--- 结束调试信息 ---
+
+########################################################################################
+Accuracy of Model@4 (Self-Consistency): 1.0000.
+Total samples: 2, Correct: 2
+Elapsed time: 17.54 secs.
+########################################################################################
+Results saved to ./TTT_data/Self_Consistency_best_of_4_Qwen7B_GSM8K.json
+########################################################################################
+实验配置参数:
+########################################################################################
+                   method ===> self-consistency
+    n_repetitive_sampling ===> 4
+              temperature ===> 0.7
+                    top_p ===> 1.0
+               model_path ===> Qwen/Qwen2.5-Math-7B-Instruct
+             save_to_json ===> True
+        dataset_repo_name ===> openai/gsm8k
+               max_tokens ===> 512
+              subset_size ===> 2
+            lambda_weight ===> 0.5
+     confidence_threshold ===> -inf
+        key_step_api_base ===> https://api.agicto.cn/v1
+       key_step_api_model ===> qwen3-max-preview
+     key_step_temperature ===> 0.2
+########################################################################################

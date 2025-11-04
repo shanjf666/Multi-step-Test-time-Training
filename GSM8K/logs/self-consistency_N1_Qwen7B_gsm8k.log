@@ -1,29 +1,124 @@
 Using device: cuda
 正在加载语言模型...
-Loading checkpoint shards:   0%|                                                                                                                                                                                                                                                             | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|█████████████████████████████████████████████████████████████▎                                                                                                                                                                                       | 1/4 [00:00<00:01,  2.57it/s]Loading checkpoint shards:  50%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                                                                                          | 2/4 [00:00<00:00,  2.63it/s]Loading checkpoint shards:  75%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                             | 3/4 [00:01<00:00,  2.73it/s]Loading checkpoint shards: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:01<00:00,  2.64it/s]Loading checkpoint shards: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:01<00:00,  2.65it/s]
+Loading checkpoint shards:   0%|                                                                                                                                                                                                    | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|███████████████████████████████████████████████                                                                                                                                             | 1/4 [00:01<00:03,  1.29s/it]Loading checkpoint shards:  50%|██████████████████████████████████████████████████████████████████████████████████████████████                                                                                              | 2/4 [00:03<00:03,  1.64s/it]Loading checkpoint shards:  75%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                               | 3/4 [00:04<00:01,  1.64s/it]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:05<00:00,  1.30s/it]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:05<00:00,  1.40s/it]
+语言模型加载完成!
+正在加载数据集...
+{'question': "Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?", 'answer': 'Janet sells 16 - 3 - 4 = <<16-3-4=9>>9 duck eggs a day.\nShe makes 9 * 2 = $<<9*2=18>>18 every day at the farmer’s market.\n#### 18'}
+数据集加载完成，共5个样本
+开始执行基于步骤的置信度评估...
+Processing: 0it [00:00, ?it/s]Processing: 0it [00:17, ?it/s, accuracy=1.0000]Processing: 1it [00:17, 17.67s/it, accuracy=1.0000]Processing: 2it [00:30, 14.90s/it, accuracy=1.0000]Processing: 2it [00:44, 22.27s/it, accuracy=1.0000]
+
+--- 样本 1 调试信息 ---
+问题: Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?
+真实答案: 18
+模型答案: 18
+答案统计: {'18': 1}
+是否正确: True
+--- 结束调试信息 ---
+
+Error generating candidates for sample 1: CUDA out of memory. Tried to allocate 42.00 MiB. GPU 0 has a total capacity of 31.47 GiB of which 7.31 MiB is free. Including non-PyTorch memory, this process has 15.31 GiB memory in use. Process 155722 has 16.14 GiB memory in use. Of the allocated memory 14.91 GiB is allocated by PyTorch, and 106.58 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
 Traceback (most recent call last):
   File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/main.py", line 217, in <module>
     main()
-  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/main.py", line 104, in main
-    ).to(device)
-      ^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/transformers/modeling_utils.py", line 4341, in to
-    return super().to(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1355, in to
-    return self._apply(convert)
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 915, in _apply
-    module._apply(fn)
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 915, in _apply
-    module._apply(fn)
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 915, in _apply
-    module._apply(fn)
-  [Previous line repeated 2 more times]
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 942, in _apply
-    param_applied = fn(param)
-                    ^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1341, in convert
-    return t.to(
-           ^^^^^
-torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 130.00 MiB. GPU 0 has a total capacity of 47.37 GiB of which 2.31 MiB is free. Process 2029 has 20.69 GiB memory in use. Process 2070 has 23.01 GiB memory in use. Including non-PyTorch memory, this process has 3.66 GiB memory in use. Of the allocated memory 3.37 GiB is allocated by PyTorch, and 14.38 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/main.py", line 182, in main
+    Self_Consistency_Selection(
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/methods/self_consistency.py", line 60, in Self_Consistency_Selection
+    candidates = generate_with_transformers(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/utils/common.py", line 156, in generate_with_transformers
+    outputs = model.generate(input_ids, **generate_kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/generation/utils.py", line 2629, in generate
+    result = self._sample(
+             ^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/generation/utils.py", line 3613, in _sample
+    outputs = model_forward(**model_inputs, return_dict=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/utils/generic.py", line 959, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 450, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+                                       ^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/utils/generic.py", line 1083, in wrapper
+    outputs = func(self, *args, **kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 376, in forward
+    position_embeddings = self.rotary_emb(hidden_states, position_ids)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 113, in decorate_context
+    @functools.wraps(func)
+
+KeyboardInterrupt
+Using device: cuda
+正在加载语言模型...
+Loading checkpoint shards:   0%|                                                                                                                                                                                                    | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|███████████████████████████████████████████████                                                                                                                                             | 1/4 [00:00<00:01,  2.74it/s]Loading checkpoint shards:  50%|██████████████████████████████████████████████████████████████████████████████████████████████                                                                                              | 2/4 [00:00<00:00,  3.07it/s]Loading checkpoint shards:  75%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                               | 3/4 [00:01<00:00,  2.36it/s]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:01<00:00,  2.62it/s]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:01<00:00,  2.63it/s]
+语言模型加载完成!
+正在加载数据集...
+{'question': "Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?", 'answer': 'Janet sells 16 - 3 - 4 = <<16-3-4=9>>9 duck eggs a day.\nShe makes 9 * 2 = $<<9*2=18>>18 every day at the farmer’s market.\n#### 18'}
+数据集加载完成，共2个样本
+开始执行基于步骤的置信度评估...
+Processing: 0it [00:00, ?it/s]Processing: 0it [00:08, ?it/s, accuracy=1.0000]Processing: 1it [00:08,  8.19s/it, accuracy=1.0000]Processing: 1it [00:12,  8.19s/it, accuracy=1.0000]Processing: 2it [00:12,  5.75s/it, accuracy=1.0000]Processing: 2it [00:12,  6.12s/it, accuracy=1.0000]
+
+--- 样本 1 调试信息 ---
+问题: Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?
+真实答案: 18
+模型答案: 18
+答案统计: {'18': 1}
+是否正确: True
+--- 结束调试信息 ---
+
+
+--- 样本 2 调试信息 ---
+问题: A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolts in total does it take?
+真实答案: 3
+模型答案: 3
+答案统计: {'3': 1}
+是否正确: True
+--- 结束调试信息 ---
+
+########################################################################################
+Accuracy of Model@1 (Self-Consistency): 1.0000.
+Total samples: 2, Correct: 2
+Elapsed time: 12.24 secs.
+########################################################################################
+Results saved to ./TTT_data/Self_Consistency_best_of_1_Qwen7B_GSM8K.json
+########################################################################################
+实验配置参数:
+########################################################################################
+                   method ===> self-consistency
+    n_repetitive_sampling ===> 1
+              temperature ===> 0.7
+                    top_p ===> 1.0
+               model_path ===> Qwen/Qwen2.5-Math-7B-Instruct
+             save_to_json ===> True
+        dataset_repo_name ===> openai/gsm8k
+               max_tokens ===> 512
+              subset_size ===> 2
+            lambda_weight ===> 0.5
+     confidence_threshold ===> -inf
+        key_step_api_base ===> https://api.agicto.cn/v1
+       key_step_api_model ===> qwen3-max-preview
+     key_step_temperature ===> 0.2
+########################################################################################

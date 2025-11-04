@@ -1,0 +1,17 @@
+{
+    "results": [
+        {
+            "question": "Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?",
+            "answer": "To determine how much Janet makes every day at the farmers' market, we need to follow these steps: 1. Calculate the total number of eggs Janet has after eating some and baking some. 2. Determine how many eggs Janet sells at the farmers' market. 3. Calculate the total earnings from selling the eggs. **Step 1: Calculate the total number of eggs Janet has after eating some and baking some.** Janet starts with 16 eggs per day. She eats 3 eggs for breakfast. She bakes 4 eggs for her friends. So, the total number of eggs used per day is: \\[ 3 + 4 = 7 \\] Therefore, the number of eggs left for sale is: \\[ 16 - 7 = 9 \\] **Step 2: Determine how many eggs Janet sells at the farmers' market.** Janet sells the remaining eggs at the farmers' market. From the previous step, we know she has 9 eggs left. **Step 3: Calculate the total earnings from selling the eggs.** Janet sells each egg for $2. So, the total earnings from selling 9 eggs is: \\[ 9 \\times 2 = 18 \\] Therefore, Janet makes \\(\\boxed{18}\\) dollars every day at the farmers' market.|im_end|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||",
+            "max_confidence": 0.5191584234207011,
+            "correct": true
+        },
+        {
+            "question": "A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolts in total does it take?",
+            "answer": "To determine the total number of bolts of fiber needed for the robe, we need to follow these steps: 1. Identify the amount of blue fiber required. 2. Calculate the amount of white fiber required. 3. Add the amounts of blue and white fiber together. Step 1: The robe requires 2 bolts of blue fiber. Step 2: The robe requires half as much white fiber as blue fiber. Since the blue fiber is 2 bolts, the white fiber is: \\[ \\frac{2}{2} = 1 \\text{ bolt} \\] Step 3: Add the amounts of blue and white fiber together: \\[ 2 + 1 = 3 \\text{ bolts} \\] Therefore, the total number of bolts of fiber needed is \\(\\boxed{3}\\).|im_end|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||",
+            "max_confidence": 0.35240330105601586,
+            "correct": true
+        }
+    ],
+    "accuracy": 1.0
+}

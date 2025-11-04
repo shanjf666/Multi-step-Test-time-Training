@@ -101,8 +101,10 @@ def Self_Consistency_Selection(dataset, config, model, tokenizer, device, N=4, s
         # 保存结果
         table.append({
             "question": question,
-            "answer": cleaned_text,
-            "max_confidence": step_confidence_scores[best_index],
+            "true_answer": true_answer,
+            "answer": model_answer,
+            "candidates": valid_candidates,         # 原始解码文本列表（可能含空）
+            "counts": dict(answer_counter),         # 每个候选答案的计数
             "correct": is_correct_answer(model_answer, true_answer)
         })
         index += 1

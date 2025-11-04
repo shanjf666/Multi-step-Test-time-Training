@@ -1,0 +1,153 @@
+Using device: cuda
+正在加载语言模型...
+Loading checkpoint shards:   0%|                                                                                                                                                                                                    | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|███████████████████████████████████████████████                                                                                                                                             | 1/4 [00:00<00:01,  1.56it/s]Loading checkpoint shards:  50%|██████████████████████████████████████████████████████████████████████████████████████████████                                                                                              | 2/4 [00:01<00:01,  1.44it/s]Loading checkpoint shards:  75%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                               | 3/4 [00:02<00:01,  1.09s/it]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:03<00:00,  1.14it/s]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:03<00:00,  1.15it/s]
+语言模型加载完成!
+正在加载数据集...
+{'question': "Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?", 'answer': 'Janet sells 16 - 3 - 4 = <<16-3-4=9>>9 duck eggs a day.\nShe makes 9 * 2 = $<<9*2=18>>18 every day at the farmer’s market.\n#### 18'}
+数据集加载完成，共5个样本
+开始执行基于步骤的置信度评估...
+Processing: 0it [00:00, ?it/s]Processing: 0it [00:17, ?it/s, accuracy=1.0000]Processing: 1it [00:17, 17.11s/it, accuracy=1.0000]Processing: 1it [00:26, 17.11s/it, accuracy=1.0000]Processing: 2it [00:26, 12.37s/it, accuracy=1.0000]Processing: 2it [00:39, 19.65s/it, accuracy=1.0000]
+
+--- 样本 1 调试信息 ---
+问题: Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?
+真实答案: 18
+模型答案: 18
+答案统计: {'18': 8}
+是否正确: True
+--- 结束调试信息 ---
+
+
+--- 样本 2 调试信息 ---
+问题: A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolts in total does it take?
+真实答案: 3
+模型答案: 3
+答案统计: {'3': 8}
+是否正确: True
+--- 结束调试信息 ---
+
+Traceback (most recent call last):
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/main.py", line 217, in <module>
+    main()
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/main.py", line 182, in main
+    Self_Consistency_Selection(
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/methods/self_consistency.py", line 60, in Self_Consistency_Selection
+    candidates = generate_with_transformers(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/utils/common.py", line 156, in generate_with_transformers
+    outputs = model.generate(input_ids, **generate_kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/generation/utils.py", line 2629, in generate
+    result = self._sample(
+             ^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/generation/utils.py", line 3613, in _sample
+    outputs = model_forward(**model_inputs, return_dict=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/utils/generic.py", line 959, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 450, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+                                       ^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/utils/generic.py", line 1083, in wrapper
+    outputs = func(self, *args, **kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 379, in forward
+    hidden_states = decoder_layer(
+                    ^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/modeling_layers.py", line 94, in __call__
+    return super().__call__(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 231, in forward
+    hidden_states, _ = self.self_attn(
+                       ^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 180, in forward
+    attn_output = self.o_proj(attn_output)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Using device: cuda
+正在加载语言模型...
+Loading checkpoint shards:   0%|                                                                                                                                                                                                    | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|███████████████████████████████████████████████                                                                                                                                             | 1/4 [00:00<00:01,  2.82it/s]Loading checkpoint shards:  50%|██████████████████████████████████████████████████████████████████████████████████████████████                                                                                              | 2/4 [00:00<00:00,  3.12it/s]Loading checkpoint shards:  75%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                               | 3/4 [00:00<00:00,  3.33it/s]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:01<00:00,  3.64it/s]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:01<00:00,  3.43it/s]
+语言模型加载完成!
+正在加载数据集...
+{'question': "Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?", 'answer': 'Janet sells 16 - 3 - 4 = <<16-3-4=9>>9 duck eggs a day.\nShe makes 9 * 2 = $<<9*2=18>>18 every day at the farmer’s market.\n#### 18'}
+数据集加载完成，共2个样本
+开始执行基于步骤的置信度评估...
+Processing: 0it [00:00, ?it/s]Processing: 0it [00:15, ?it/s, accuracy=1.0000]Processing: 1it [00:15, 15.58s/it, accuracy=1.0000]Processing: 1it [00:24, 15.58s/it, accuracy=1.0000]Processing: 2it [00:24, 11.48s/it, accuracy=1.0000]Processing: 2it [00:24, 12.10s/it, accuracy=1.0000]
+
+--- 样本 1 调试信息 ---
+问题: Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?
+真实答案: 18
+模型答案: 18
+答案统计: {'18': 8}
+是否正确: True
+--- 结束调试信息 ---
+
+
+--- 样本 2 调试信息 ---
+问题: A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolts in total does it take?
+真实答案: 3
+模型答案: 3
+答案统计: {'3': 8}
+是否正确: True
+--- 结束调试信息 ---
+
+########################################################################################
+Accuracy of Model@8 (Self-Consistency): 1.0000.
+Total samples: 2, Correct: 2
+Elapsed time: 24.20 secs.
+########################################################################################
+Results saved to ./TTT_data/Self_Consistency_best_of_8_Qwen7B_GSM8K.json
+########################################################################################
+实验配置参数:
+########################################################################################
+                   method ===> self-consistency
+    n_repetitive_sampling ===> 8
+              temperature ===> 0.7
+                    top_p ===> 1.0
+               model_path ===> Qwen/Qwen2.5-Math-7B-Instruct
+             save_to_json ===> True
+        dataset_repo_name ===> openai/gsm8k
+               max_tokens ===> 512
+              subset_size ===> 2
+            lambda_weight ===> 0.5
+     confidence_threshold ===> -inf
+        key_step_api_base ===> https://api.agicto.cn/v1
+       key_step_api_model ===> qwen3-max-preview
+     key_step_temperature ===> 0.2
+########################################################################################

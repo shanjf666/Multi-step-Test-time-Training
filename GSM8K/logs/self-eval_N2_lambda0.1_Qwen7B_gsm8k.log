@@ -1,0 +1,78 @@
+HTTP Error 429 thrown while requesting HEAD https://hf-mirror.com/api/resolve-cache/models/Qwen/Qwen2.5-Math-7B-Instruct/ef9926d75ab1d54532f6a30dd5e760355eb9aa4d/config.json
+Retrying in 1s [Retry 1/5].
+HTTP Error 429 thrown while requesting HEAD https://hf-mirror.com/api/resolve-cache/models/Qwen/Qwen2.5-Math-7B-Instruct/ef9926d75ab1d54532f6a30dd5e760355eb9aa4d/config.json
+Retrying in 2s [Retry 2/5].
+HTTP Error 429 thrown while requesting HEAD https://hf-mirror.com/api/resolve-cache/models/Qwen/Qwen2.5-Math-7B-Instruct/ef9926d75ab1d54532f6a30dd5e760355eb9aa4d/config.json
+Retrying in 4s [Retry 3/5].
+HTTP Error 429 thrown while requesting HEAD https://hf-mirror.com/api/resolve-cache/models/Qwen/Qwen2.5-Math-7B-Instruct/ef9926d75ab1d54532f6a30dd5e760355eb9aa4d/config.json
+Retrying in 8s [Retry 4/5].
+HTTP Error 429 thrown while requesting HEAD https://hf-mirror.com/api/resolve-cache/models/Qwen/Qwen2.5-Math-7B-Instruct/ef9926d75ab1d54532f6a30dd5e760355eb9aa4d/config.json
+Retrying in 8s [Retry 5/5].
+HTTP Error 429 thrown while requesting HEAD https://hf-mirror.com/api/resolve-cache/models/Qwen/Qwen2.5-Math-7B-Instruct/ef9926d75ab1d54532f6a30dd5e760355eb9aa4d/config.json
+Using device: cuda
+正在加载语言模型...
+Loading checkpoint shards:   0%|                                                                                                                                                                                                    | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|███████████████████████████████████████████████                                                                                                                                             | 1/4 [00:00<00:01,  1.96it/s]Loading checkpoint shards:  50%|██████████████████████████████████████████████████████████████████████████████████████████████                                                                                              | 2/4 [00:00<00:00,  2.65it/s]Loading checkpoint shards:  75%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                               | 3/4 [00:01<00:00,  3.09it/s]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:01<00:00,  3.49it/s]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:01<00:00,  3.12it/s]
+HTTP Error 429 thrown while requesting HEAD https://hf-mirror.com/api/resolve-cache/models/Qwen/Qwen2.5-Math-7B-Instruct/ef9926d75ab1d54532f6a30dd5e760355eb9aa4d/generation_config.json
+Retrying in 1s [Retry 1/5].
+HTTP Error 429 thrown while requesting HEAD https://hf-mirror.com/api/resolve-cache/models/Qwen/Qwen2.5-Math-7B-Instruct/ef9926d75ab1d54532f6a30dd5e760355eb9aa4d/generation_config.json
+Retrying in 2s [Retry 2/5].
+HTTP Error 429 thrown while requesting HEAD https://hf-mirror.com/api/resolve-cache/models/Qwen/Qwen2.5-Math-7B-Instruct/ef9926d75ab1d54532f6a30dd5e760355eb9aa4d/generation_config.json
+Retrying in 4s [Retry 3/5].
+HTTP Error 429 thrown while requesting HEAD https://hf-mirror.com/api/resolve-cache/models/Qwen/Qwen2.5-Math-7B-Instruct/ef9926d75ab1d54532f6a30dd5e760355eb9aa4d/generation_config.json
+Retrying in 8s [Retry 4/5].
+HTTP Error 429 thrown while requesting HEAD https://hf-mirror.com/api/resolve-cache/models/Qwen/Qwen2.5-Math-7B-Instruct/ef9926d75ab1d54532f6a30dd5e760355eb9aa4d/generation_config.json
+Retrying in 8s [Retry 5/5].
+HTTP Error 429 thrown while requesting HEAD https://hf-mirror.com/api/resolve-cache/models/Qwen/Qwen2.5-Math-7B-Instruct/ef9926d75ab1d54532f6a30dd5e760355eb9aa4d/tokenizer_config.json
+Retrying in 1s [Retry 1/5].
+HTTP Error 429 thrown while requesting HEAD https://hf-mirror.com/api/resolve-cache/models/Qwen/Qwen2.5-Math-7B-Instruct/ef9926d75ab1d54532f6a30dd5e760355eb9aa4d/tokenizer_config.json
+Retrying in 2s [Retry 2/5].
+语言模型加载完成!
+正在加载数据集...
+{'question': "Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?", 'answer': 'Janet sells 16 - 3 - 4 = <<16-3-4=9>>9 duck eggs a day.\nShe makes 9 * 2 = $<<9*2=18>>18 every day at the farmer’s market.\n#### 18'}
+数据集加载完成，共2个样本
+开始执行基于步骤的置信度评估...
+Processing: 0it [00:00, ?it/s]Processing: 0it [00:16, ?it/s, accuracy=1.0000]Processing: 1it [00:16, 16.85s/it, accuracy=1.0000]Processing: 1it [00:24, 16.85s/it, accuracy=1.0000]Processing: 2it [00:24, 11.60s/it, accuracy=1.0000]Processing: 2it [00:24, 12.38s/it, accuracy=1.0000]
+
+--- 样本 1 调试信息 ---
+问题: Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?
+真实答案: 18
+模型答案(提取): 18
+清理后文本(保存的 answer): To determine how much Janet makes every day at the farmers' market, we need to follow these steps: 1. Calculate the total number of eggs Janet gets from her ducks each day. 2. Determine how many eggs Janet eats or bakes each day. 3. Find out how many eggs are left after she eats and bakes. 4. Calculate the total revenue from selling the remaining eggs. Let's go through each step in detail: 1. Janet’s ducks lay 16 eggs per day. 2. Janet eats 3 eggs for breakfast every morning and bakes 4 eggs for
+最高置信度: 0.0841
+是否正确: True
+--- 结束调试信息 ---
+
+
+--- 样本 2 调试信息 ---
+问题: A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolts in total does it take?
+真实答案: 3
+模型答案(提取): 3
+清理后文本(保存的 answer): To determine the total number of bolts of fiber needed for the robe, we need to follow these steps: 1. Identify the amount of blue fiber required. 2. Calculate the amount of white fiber required. 3. Add the amounts of blue and white fiber together to find the total. Step 1: Identify the amount of blue fiber required. The problem states that the robe takes 2 bolts of blue fiber. Step 2: Calculate the amount of white fiber required. The problem also states that the robe takes half as much white fi
+最高置信度: 0.0064
+是否正确: True
+--- 结束调试信息 ---
+
+########################################################################################
+Accuracy of Model@2: 1.0000.
+Total samples: 2, Correct: 2
+Elapsed time: 24.77 secs.
+########################################################################################
+Results saved to ./TTT_data/Self_Eval_best_of_2_lambda_0.1_Qwen7B_GSM8K.json
+########################################################################################
+实验配置参数:
+########################################################################################
+                   method ===> self-eval
+    n_repetitive_sampling ===> 2
+              temperature ===> 0.7
+                    top_p ===> 1.0
+               model_path ===> Qwen/Qwen2.5-Math-7B-Instruct
+             save_to_json ===> True
+        dataset_repo_name ===> openai/gsm8k
+               max_tokens ===> 512
+              subset_size ===> 2
+            lambda_weight ===> 0.1
+     confidence_threshold ===> -inf
+        key_step_api_base ===> https://api.agicto.cn/v1
+       key_step_api_model ===> qwen3-max-preview
+     key_step_temperature ===> 0.2
+########################################################################################

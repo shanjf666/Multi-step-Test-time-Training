@@ -1,0 +1,129 @@
+Using device: cuda
+正在加载语言模型...
+Loading checkpoint shards:   0%|                                                                                                                                                                                                    | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|███████████████████████████████████████████████                                                                                                                                             | 1/4 [00:01<00:03,  1.28s/it]Loading checkpoint shards:  50%|██████████████████████████████████████████████████████████████████████████████████████████████                                                                                              | 2/4 [00:01<00:01,  1.17it/s]Loading checkpoint shards:  75%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                               | 3/4 [00:02<00:00,  1.53it/s]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:02<00:00,  1.83it/s]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:02<00:00,  1.52it/s]
+语言模型加载完成!
+正在加载数据集...
+数据集加载完成，共5个样本
+开始执行基于整个回答置信度的评估...
+Processing: 0it [00:00, ?it/s]Processing: 1it [00:20, 20.42s/it]Processing: 2it [00:33, 16.38s/it]Processing: 2it [00:41, 20.85s/it]
+Error generating candidates for sample 0: CUDA out of memory. Tried to allocate 48.00 MiB. GPU 0 has a total capacity of 31.47 GiB of which 17.31 MiB is free. Process 155582 has 14.87 GiB memory in use. Including non-PyTorch memory, this process has 16.57 GiB memory in use. Of the allocated memory 15.82 GiB is allocated by PyTorch, and 465.28 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Error generating candidates for sample 1: CUDA out of memory. Tried to allocate 42.00 MiB. GPU 0 has a total capacity of 31.47 GiB of which 17.31 MiB is free. Process 155582 has 14.87 GiB memory in use. Including non-PyTorch memory, this process has 16.57 GiB memory in use. Of the allocated memory 15.99 GiB is allocated by PyTorch, and 292.74 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/base.py", line 107, in <module>
+    main()
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/base.py", line 87, in main
+    Response_Certainty_Selection(
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/methods/response_certainty.py", line 142, in Response_Certainty_Selection
+    candidates = generate_with_transformers(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/Multi-step-Test-time-Training/GSM8K/utils/common.py", line 156, in generate_with_transformers
+    outputs = model.generate(input_ids, **generate_kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/generation/utils.py", line 2629, in generate
+    result = self._sample(
+             ^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/generation/utils.py", line 3613, in _sample
+    outputs = model_forward(**model_inputs, return_dict=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/utils/generic.py", line 959, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 450, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+                                       ^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/utils/generic.py", line 1083, in wrapper
+    outputs = func(self, *args, **kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 379, in forward
+    hidden_states = decoder_layer(
+                    ^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/modeling_layers.py", line 94, in __call__
+    return super().__call__(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 231, in forward
+    hidden_states, _ = self.self_attn(
+                       ^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 167, in forward
+    attn_output, attn_weights = attention_interface(
+                                ^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/integrations/flash_attention.py", line 64, in flash_attention_forward
+    attn_output = _flash_attention_forward(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/transformers/modeling_flash_attention_utils.py", line 671, in _flash_attention_forward
+    k = key_states.reshape(-1, key_states.size(-2), key_states.size(-1))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Using device: cuda
+正在加载语言模型...
+Loading checkpoint shards:   0%|                                                                                                                                                                                                    | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|███████████████████████████████████████████████                                                                                                                                             | 1/4 [00:00<00:01,  1.87it/s]Loading checkpoint shards:  50%|██████████████████████████████████████████████████████████████████████████████████████████████                                                                                              | 2/4 [00:01<00:01,  1.82it/s]Loading checkpoint shards:  75%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                               | 3/4 [00:01<00:00,  2.32it/s]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:01<00:00,  2.80it/s]Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:01<00:00,  2.45it/s]
+语言模型加载完成!
+正在加载数据集...
+数据集加载完成，共2个样本
+开始执行基于整个回答置信度的评估...
+Processing: 0it [00:00, ?it/s]Processing: 0it [00:12, ?it/s, accuracy=1.0000]Processing: 1it [00:12, 12.05s/it, accuracy=1.0000]Processing: 1it [00:19, 12.05s/it, accuracy=1.0000]Processing: 2it [00:19,  9.18s/it, accuracy=1.0000]Processing: 2it [00:19,  9.61s/it, accuracy=1.0000]
+
+--- 样本 1 调试信息 ---
+问题: Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?
+真实答案: 18
+模型答案(提取): 18
+清理后文本(保存的 answer): To determine how much Janet makes every day at the farmers' market, we need to follow these steps: 1. **Calculate the total number of eggs Janet collects each day:** Janet's ducks lay 16 eggs per day. 2. **Determine how many eggs Janet eats each day:** Janet eats 3 eggs for breakfast every morning. 3. **Determine how many eggs Janet uses to bake muffins each day:** Janet bakes muffins for her friends every day with 4 eggs. 4. **Calculate the total number of eggs Janet uses each day:** \[ \text{Total eggs used} = \text{Eggs eaten} + \text{Eggs used for muffins} \] \[ \text{Total eggs used} = 3 + 4 = 7 \] 5. **Calculate the number of eggs Janet has left each day:** \[ \text{Eggs left} = \text{Total eggs collected} - \text{Total eggs used} \] \[ \text{Eggs left} = 16 - 7 = 9 \] 6. **Determine how much Janet sells each fresh duck egg:** Janet sells each fresh duck egg for $2. 7. **Calculate the total amount Janet makes each day at the farmers' market:** \[ \text{Total amount made} = \text{Eggs left} \times \text{Price per egg} \] \[ \text{Total amount made} = 9 \times 2 = 18 \] Therefore, Janet makes \(\boxed{18}\) dollars every day at the farmers' market.
+最高置信度: 19.1606
+是否正确: True
+--- 结束调试信息 ---
+
+
+--- 样本 2 调试信息 ---
+问题: A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolts in total does it take?
+真实答案: 3
+模型答案(提取): 3
+清理后文本(保存的 answer): To determine the total number of bolts of fiber required for the robe, we need to follow these steps: 1. Identify the amount of blue fiber required. 2. Calculate the amount of white fiber required. 3. Add the amounts of blue and white fiber to find the total. Step 1: Identify the amount of blue fiber required. The problem states that the robe takes 2 bolts of blue fiber. Step 2: Calculate the amount of white fiber required. The problem also states that the robe takes half as much white fiber as blue fiber. Since the robe takes 2 bolts of blue fiber, the amount of white fiber required is: \[ \frac{2}{2} = 1 \text{ bolt} \] Step 3: Add the amounts of blue and white fiber to find the total. The total number of bolts of fiber required is the sum of the blue fiber and the white fiber: \[ 2 + 1 = 3 \text{ bolts} \] Therefore, the total number of bolts of fiber required is \(\boxed{3}\).
+最高置信度: 22.3977
+是否正确: True
+--- 结束调试信息 ---
+
+########################################################################################
+Accuracy of Model@4: 1.0000.
+Total samples: 2, Correct: 2
+Elapsed time: 19.21 secs.
+########################################################################################
+Results saved to ./TTT_data/Self_Certainty_Trajectorylevel_best_of_4_Qwen7B_GSM8K.json
+########################################################################################
+实验配置参数:
+########################################################################################
+                   method ===> response-certainty
+    n_repetitive_sampling ===> 4
+              temperature ===> 0.7
+                    top_p ===> 1.0
+               model_path ===> Qwen/Qwen2.5-Math-7B-Instruct
+             save_to_json ===> True
+        dataset_repo_name ===> openai/gsm8k
+               max_tokens ===> 512
+              subset_size ===> 2
+########################################################################################

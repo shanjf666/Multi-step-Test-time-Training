@@ -1,0 +1,17 @@
+{
+    "results": [
+        {
+            "question": "Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?",
+            "answer": "To determine how much Janet makes every day at the farmers' market, we need to follow these steps: 1. Calculate the total number of eggs Janet collect each day. 2. Determine how many eggs Janet consumes each day. 3. Calculate the number of eggs Janet sells each day. 4. Calculate the revenue from selling the eggs. **Step 1: Calculate the total number of eggs Janet collect each day.** Janet's ducks lay 16 eggs per day. **Step 2: Determine how many eggs Janet consumes each day.** Janet eats 3 eggs for breakfast every morning and bakes muffins for her friends every day with 4 eggs. So, the total number of eggs consumed each day is: \\[ 3 + 4 = 7 \\] **Step 3: Calculate the number of eggs Janet sells each day.** The number of eggs Janet sells each day is the total number of eggs collected minus the number of eggs consumed: \\[ 16 - 7 = 9 \\] **Step 4: Calculate the revenue from selling the eggs.** Janet sells each fresh duck egg for $2. So, the revenue from selling the eggs each day is: \\[ 9 \\times 2 = 18 \\] Therefore, Janet makes \\(\\boxed{18}\\) dollars every day at the farmers' market.|im_end|",
+            "max_confidence": 7.473991013156935,
+            "correct": true
+        },
+        {
+            "question": "A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolts in total does it take?",
+            "answer": "To determine the total number of bolts of fiber needed for the robe, we need to follow these steps: 1. Identify the amount of blue fiber required. 2. Calculate the amount of white fiber required. 3. Add the amounts of blue and white fiber together. Step 1: Identify the amount of blue fiber required. The problem states that the robe takes 2 bolts of blue fiber. Step 2: Calculate the amount of white fiber required. The problem also states that the robe takes half as much white fiber as blue fiber. Since the robe takes 2 bolts of blue fiber, the amount of white fiber required is: \\[ \\frac{2}{2} = 1 \\text{ bolt} \\] Step 3: Add the amounts of blue and white fiber together. The total number of bolts of fiber needed is the sum of the blue fiber and the white fiber: \\[ 2 + 1 = 3 \\] Therefore, the total number of bolts of fiber needed is \\(\\boxed{3}\\).|im_end|",
+            "max_confidence": 7.627692550605541,
+            "correct": true
+        }
+    ],
+    "accuracy": 1.0
+}
