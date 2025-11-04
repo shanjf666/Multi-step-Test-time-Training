@@ -1,7 +1,7 @@
 """
 export OPENAI_API_KEY='sk-szeemiuaxtqymzkkpaezgadntxpajxwyhrzofzsodywqngqz'
 python main.py --method coe-c --model_path Qwen/Qwen2.5-Math-7B-Instruct --temperature 0.7 --max_tokens 1024 --lambda_weight 0.5 --n_repetitive_sampling 8 --subset_size 100 
-python main.py --method self-consistency --model_path meta-llama/Llama-3.2-1B-Instruct --lambda_weight 0.5 --subset_size 100 --max_tokens 1024
+python main.py --method entropy --model_path meta-llama/Llama-3.2-1B-Instruct --temperature 0.1 --lambda_weight 0.5 --subset_size 100 --max_tokens 1024
 """
 
 import os
