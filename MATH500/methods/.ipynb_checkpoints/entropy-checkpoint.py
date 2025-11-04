@@ -95,9 +95,6 @@ def Entropy_Selection(dataset, config, model, tokenizer, device,
         best_index = step_confidence_scores.index(max(step_confidence_scores))
         best_candidate = valid_candidates[best_index]
 
-        if step_confidence_scores[best_index] < config.confidence_threshold:
-            continue
-
         # 解码最佳响应
         response_text = tokenizer.decode(best_candidate["tokens"], skip_special_tokens=False)
 
@@ -116,28 +113,17 @@ def Entropy_Selection(dataset, config, model, tokenizer, device,
  
         # 更新统计
         n_samples += 1
-        clean_key_step_text = clean_latex_format(response_text)
+        # clean_key_step_text = clean_latex_format(key_step_text)
+        clean_key_step_text = clean_latex_format(cleaned_text)
+        model_answer = clean_latex_format(model_answer)
         if true_answer in clean_key_step_text[-30:] or is_correct_answer(model_answer, true_answer):
             n_true_ans += 1
-            
-        # 仅使用 OpenAI 兼容接口抽取关键步骤
-        key_step_text = ""
-        try:
-            key_step_text = summarize_key_steps_openai(
-                client=key_api_client,
-                model=key_api_model,
-                reasoning_text=cleaned_text,
-                temperature=key_api_temp
-            )
-        except Exception as e:
-            print(f"[WARN] key-step extraction failed for sample {i}: {e}")
-            key_step_text = ""
+
             
         # 保存为三字段格式
         table.append({
             "question": question,
             "answer": cleaned_text,
-            "gpt_response": key_step_text,
             "max_confidence": step_confidence_scores[best_index],
             "correct": true_answer in clean_key_step_text[-30:] or is_correct_answer(model_answer, true_answer)
         })
@@ -156,7 +142,6 @@ def Entropy_Selection(dataset, config, model, tokenizer, device,
             print(f"清理后文本(保存的 answer): {cleaned_text}")
             print(f"最高置信度: {step_confidence_scores[best_index]:.4f}")
             print(f"是否正确: {is_correct_answer(model_answer, true_answer)}")
-            print(f"关键步骤(gpt_response): {key_step_text}")
             print("--- 结束调试信息 ---\n")
 
     # 打印评估结果
