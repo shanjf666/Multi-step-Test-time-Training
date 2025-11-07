@@ -44,8 +44,12 @@ def Entropy_Selection(dataset, config, model, tokenizer, device,
         question = data['problem']
 
         # 构建模型提示
+        # prompt = tokenizer.apply_chat_template(
+        #     [{"role": "user", "content": f"{config.system_prompt}Q: {question}\n\nA:"}],
+        #     tokenize=False, add_generation_prompt=True
+        # )
         prompt = tokenizer.apply_chat_template(
-            [{"role": "user", "content": f"{config.system_prompt}Q: {question}\n\nA:"}],
+            [{"role": "user", "content": f"Q: {question}\nLet's think step by step and output the final answer within \\boxed{{}}\nA:"}],
             tokenize=False, add_generation_prompt=True
         )
 
@@ -110,7 +114,7 @@ def Entropy_Selection(dataset, config, model, tokenizer, device,
         cleaned_text = re.sub(r'<|endoftext|>', '', cleaned_text)
 
         model_answer = extract_model_answer(response_text)
- 
+
         # 更新统计
         n_samples += 1
         # clean_key_step_text = clean_latex_format(key_step_text)
@@ -156,7 +160,7 @@ def Entropy_Selection(dataset, config, model, tokenizer, device,
     # 写入JSON（每条为 {question, answer, gpt_response}）
     if save_results:
         os.makedirs("./TTT_data", exist_ok=True)
-        output_file = f"./TTT_data/Entropy_best_of_{N}_lambda_{lambda_weight}_Qwen7B_MATH500.json"
+        output_file = f"./TTT_data/Entropy_best_of_{N}_lambda_{lambda_weight}_LLam1B_MATH500_3.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
             json.dump({
                 "results": table,

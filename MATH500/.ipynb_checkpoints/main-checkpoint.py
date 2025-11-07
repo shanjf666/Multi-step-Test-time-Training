@@ -1,7 +1,9 @@
 """
 export OPENAI_API_KEY='sk-szeemiuaxtqymzkkpaezgadntxpajxwyhrzofzsodywqngqz'
 python main.py --method coe-c --model_path Qwen/Qwen2.5-Math-7B-Instruct --temperature 0.7 --max_tokens 1024 --lambda_weight 0.5 --n_repetitive_sampling 8 --subset_size 100 
-python main.py --method entropy --model_path meta-llama/Llama-3.2-1B-Instruct --temperature 0.1 --lambda_weight 0.5 --subset_size 100 --max_tokens 1024
+python main.py --method entropy --model_path Qwen/Qwen2.5-Math-1.5B-Instruct --temperature 0.1 --lambda_weight 0.5 --subset_size 100 --max_tokens 1024
+python main.py --method entropy --model_path /root/autodl-tmp/data/models/modelscope_cache/models/lijia321/llama_first --lambda_weight 0.5 --temperature 0.1 --max_tokens 1024 --n_repetitive_sampling 1
+python main.py --method self-certainty --model_path /root/autodl-tmp/data/models/modelscope_cache/models/lijia321/llama_second --lambda_weight 0.5 --temperature 0.3 --max_tokens 1024 --n_repetitive_sampling 1
 """
 
 import os
@@ -33,25 +35,17 @@ def main():
     # 命令行参数
     parser = argparse.ArgumentParser(description="基于步骤置信度的评估方法（Transformers + GPT关键步骤提取）")
 
-
-def main():
-    # 创建配置对象
-    config = Config()
-
-    # 命令行参数
-    parser = argparse.ArgumentParser(description="基于步骤置信度的评估方法（Transformers + GPT关键步骤提取）")
-
     # 生成相关
     parser.add_argument("--method", default="self-certainty", 
                         choices=["self-certainty", "self-eval", "coe-c", "baseline", "self-consistency", "entropy"], 
                         help="选择评估方法: self-certainty, self-eval, coe-c, baseline, self-consistency, entropy")
     parser.add_argument("--n_repetitive_sampling", default=4, type=int, help="为每个问题生成的解决方案数量")
-    parser.add_argument("--temperature", default=0.7, type=float, help="生成时的温度参数，控制随机性")
+    parser.add_argument("--temperature", default=0.1, type=float, help="生成时的温度参数，控制随机性")
     parser.add_argument("--top_p", default=1.0, type=float, help="Top-p采样参数")
-    parser.add_argument("--model_path", default="Qwen/Qwen2.5-Math-7B-Instruct", help="基础模型路径")
+    parser.add_argument("--model_path", default="meta-llama/Llama-3.2-1B-Instruct", help="基础模型路径")
     parser.add_argument("--save_to_json", default=True, action="store_true", help="是否将结果保存到JSON文件")
     parser.add_argument("--dataset_repo_name", default="HuggingFaceH4/MATH-500", help="数据集仓库名称")
-    parser.add_argument("--max_tokens", default=512, type=int, help="最大生成标记数")
+    parser.add_argument("--max_tokens", default=1024, type=int, help="最大生成标记数")
     parser.add_argument("--subset_size", default=None, type=int, help="测试子集大小（用于快速测试）")
     parser.add_argument("--lambda_weight", default=0.5, type=float,
                         help="置信度计算中的lambda权重参数，用于平衡token置信度和步骤概率")

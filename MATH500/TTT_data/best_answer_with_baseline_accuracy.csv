@@ -1,0 +1,11 @@
+metric,total_samples,correct_samples,accuracy
+baseline_random_answer,500,333,66.6
+step_probability,500,319,63.8
+self_certainty,500,339,67.8
+entropy,500,347,69.4
+self_eval,500,328,65.6
+coe_c,500,334,66.8
+weighted_self_certainty,500,338,67.6
+weighted_entropy,500,343,68.6
+weighted_self_eval,500,332,66.4
+weighted_coe_c,500,338,67.6

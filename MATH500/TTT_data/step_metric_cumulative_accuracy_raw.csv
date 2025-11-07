@@ -1,0 +1,6 @@
+metric,alpha,total_samples,correct_samples,accuracy
+step_probability,0.3,500,336,67.2
+self_certainty,0.3,500,340,68.0
+entropy,0.3,500,340,68.0
+self_eval,0.3,500,319,63.8
+coe_c,0.3,500,332,66.4

@@ -47,7 +47,7 @@ def baseline_evaluation(dataset, config, model, tokenizer, device, save_results=
 
         # 构建模型提示
         prompt = tokenizer.apply_chat_template(
-            [{"role": "user", "content": f"{config.system_prompt}Q: {question}\n\nA:"}],
+            [{"role": "user", "content": f"Q: {question}\nLet's think step by step and output the final answer within \\boxed{{}}\nA:"}],
             tokenize=False, add_generation_prompt=True
         )
 
@@ -72,6 +72,7 @@ def baseline_evaluation(dataset, config, model, tokenizer, device, save_results=
         # 检查答案是否正确
         n_samples += 1
         clean_response_text = clean_latex_format(response_text)
+        model_answer = clean_latex_format(model_answer)
         if true_answer in clean_response_text[-10:] or is_correct_answer(model_answer, true_answer):
             n_true_ans += 1
 

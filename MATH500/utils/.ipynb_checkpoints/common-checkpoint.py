@@ -10,7 +10,7 @@ from transformers import AutoTokenizer
 from collections import Counter
 from math_verify import parse
 
-def parse_structured_steps(response_text):
+def parse_structured_steps(response_text,min_len = 5):
     """
     解析结构化步骤（优先匹配 "## Step N:" 块），否则回退为句子/段落/行。
     """
@@ -37,101 +37,172 @@ def parse_structured_steps(response_text):
 
     # 退路1：按句子粗分
     sentences = re.split(r'[.!?]+', cleaned_text)
-    sentences = [s.strip() for s in sentences if s.strip()]
+    sentences = [s.strip() for s in sentences if len(s.strip()) >= min_len]
     if len(sentences) >= 2:
         return sentences
 
     # 退路2：按段落
-    paragraphs = [p.strip() for p in cleaned_text.split('\n\n') if p.strip()]
+    paragraphs = [p.strip() for p in cleaned_text.split('\n\n') if len(p.strip()) >= min_len]
     if len(paragraphs) >= 2:
         return paragraphs
 
     # 退路3：按行
-    lines = [line.strip() for line in cleaned_text.split('\n') if line.strip()]
+    lines = [line.strip() for line in cleaned_text.split('\n') if len(line.strip()) >= min_len]
     return lines if lines else [cleaned_text]
 
+def last_boxed_only_string(string):
+    idx = string.rfind("\\boxed")
+    if "\\boxed " in string:
+        return "\\boxed " + string.split("\\boxed ")[-1].split("$")[0]
+    if idx < 0:
+        idx = string.rfind("\\fbox")
+        if idx < 0:
+            return None
+
+    i = idx
+    right_brace_idx = None
+    num_left_braces_open = 0
+    while i < len(string):
+        if string[i] == "{":
+            num_left_braces_open += 1
+        if string[i] == "}":
+            num_left_braces_open -= 1
+            if num_left_braces_open == 0:
+                right_brace_idx = i
+                break
+        i += 1
+
+    retval = None if right_brace_idx is None else string[idx : right_brace_idx + 1]
+    return retval
 
 
+def remove_boxed(s):
+    if s is None:
+        return None
+    if "\\boxed " in s:
+        return s.replace("\\boxed ", "")
+    if s.startswith("\\boxed{") and s.endswith("}"):
+        return s[len("\\boxed{") : -1]
+    return s
 
-def extract_model_answer(response_text):
-    """
-    从模型响应中提取最终数值/答案，适配若干常见格式。
-    """
-    cleaned_response = response_text.replace("<|begin_of_text|>", "").strip()
-    cleaned_response = cleaned_response.replace("<|start_header_id|>assistant<|end_header_id|>", "").strip()
-    cleaned_response = cleaned_response.replace("<|eot_id|>", "").strip()
-    cleaned_response = cleaned_response.replace("</s>", "").strip()
-    cleaned_response = cleaned_response.replace("<|end_of_text|>", "").strip()
-    cleaned_response = cleaned_response.replace("<|end_of_sentence|>", "").strip()
-    cleaned_response = re.sub(r'<\|.*?\|>', '', cleaned_response)
-    cleaned_response = re.sub(r'\s+', ' ', cleaned_response).strip()
 
-    if not cleaned_response:
+def strip_string(string):
+    if string is None:
         return ""
+    string = string.replace("\n", "")
+    string = string.replace("\\!", "")
+    string = string.replace("\\\\", "\\")
+    string = string.replace("tfrac", "frac").replace("dfrac", "frac")
+    string = string.replace("\\left", "").replace("\\right", "")
+    string = string.replace("^{\\circ}", "").replace("^\\circ", "")
+    string = string.replace("\\$", "")
+    string = string.replace(" ", "")
+    if string == "0.5": string = "\\frac{1}{2}"
+    return string
 
-    patterns = [
-        r'Answer\s*[:\.\s]*([^\n]+)',
-        r'####\s*([^\n]+)',
-        r'\\boxed{(.+?)}',
-        r'boxed{(.+?)}',
-        r'The answer is\s*[:\.\s]*([^\.\n]+)',
-        r'Final Answer\s*[:\.\s]*([^\.\n]+)',
-        r'Therefore\s*,\s*([^\.\n]+)',
-        r'答案[:：]\s*([^\n]+)',
-        r'所以[:：]\s*([^\n]+)',
-        r'final answer\s*[:\.\s]*([^\.\n]+)',
-        r'(\d+(\.\d+)?)',
-        r'<answer>\s*(.*?)\s*</answer>',
-        r'<answer>(.*?)</answer>'
-    ]
 
-    for pattern in patterns:
-        match = re.search(pattern, cleaned_response, re.IGNORECASE)
-        if match:
-            answer = match.group(1).strip()
-            number_match = re.search(r'([+-]?\d+(?:\.\d+)?)', answer)
-            if number_match:
-                return number_match.group(1)
-            if answer:
-                return answer
+# ---------- 核心封装函数 ----------
 
-    lines = cleaned_response.split('\n')
-    for line in reversed(lines):
-        line = line.strip()
-        if line and not line.lower().startswith(('question:', 'step', 'solution:', 'answer:', '问题:', '步骤:')):
-            number_match = re.search(r'([+-]?\d+(?:\.\d+)?)$', line)
-            if number_match:
-                return number_match.group(1)
-
-    number_match = re.search(r'([+-]?\d+(?:\.\d+)?)', cleaned_response)
-    if number_match:
-        return number_match.group(1)
-    return ""
-
-def is_correct_answer(predicted, true_answer):
+def extract_model_answer(response_text: str) -> str:
     """
-    判断预测答案与真值是否一致（针对MATH500数据集）
+    从模型输出中提取最终答案（去掉 \\boxed{}）。
+    如果没有找到 \\boxed，返回 None。
     """
-    if not predicted or not true_answer:
+    boxed_part = last_boxed_only_string(response_text)
+    if boxed_part is None:
+        return None
+    answer = remove_boxed(boxed_part)
+    return answer.strip()
+
+
+def is_correct_answer(predicted: str, true_answer: str) -> bool:
+    """
+    判断预测答案与标准答案是否等价（忽略LaTeX格式差异）。
+    """
+    if predicted is None or true_answer is None:
         return False
+    return strip_string(predicted) == strip_string(true_answer)
+
+
+# def extract_model_answer(response_text):
+#     """
+#     从模型响应中提取最终数值/答案，适配若干常见格式。
+#     """
+#     cleaned_response = response_text.replace("<|begin_of_text|>", "").strip()
+#     cleaned_response = cleaned_response.replace("<|start_header_id|>assistant<|end_header_id|>", "").strip()
+#     cleaned_response = cleaned_response.replace("<|eot_id|>", "").strip()
+#     cleaned_response = cleaned_response.replace("</s>", "").strip()
+#     cleaned_response = cleaned_response.replace("<|end_of_text|>", "").strip()
+#     cleaned_response = cleaned_response.replace("<|end_of_sentence|>", "").strip()
+#     cleaned_response = re.sub(r'<\|.*?\|>', '', cleaned_response)
+#     cleaned_response = re.sub(r'\s+', ' ', cleaned_response).strip()
+
+#     if not cleaned_response:
+#         return ""
+
+#     patterns = [
+#         r'Answer\s*[:\.\s]*([^\n]+)',
+#         r'####\s*([^\n]+)',
+#         r'\\boxed{(.+?)}',
+#         r'boxed{(.+?)}',
+#         r'The answer is\s*[:\.\s]*([^\.\n]+)',
+#         r'Final Answer\s*[:\.\s]*([^\.\n]+)',
+#         r'Therefore\s*,\s*([^\.\n]+)',
+#         r'答案[:：]\s*([^\n]+)',
+#         r'所以[:：]\s*([^\n]+)',
+#         r'final answer\s*[:\.\s]*([^\.\n]+)',
+#         r'(\d+(\.\d+)?)',
+#         r'<answer>\s*(.*?)\s*</answer>',
+#         r'<answer>(.*?)</answer>'
+#     ]
+
+#     for pattern in patterns:
+#         match = re.search(pattern, cleaned_response, re.IGNORECASE)
+#         if match:
+#             answer = match.group(1).strip()
+#             number_match = re.search(r'([+-]?\d+(?:\.\d+)?)', answer)
+#             if number_match:
+#                 return number_match.group(1)
+#             if answer:
+#                 return answer
+
+#     lines = cleaned_response.split('\n')
+#     for line in reversed(lines):
+#         line = line.strip()
+#         if line and not line.lower().startswith(('question:', 'step', 'solution:', 'answer:', '问题:', '步骤:')):
+#             number_match = re.search(r'([+-]?\d+(?:\.\d+)?)$', line)
+#             if number_match:
+#                 return number_match.group(1)
+
+#     number_match = re.search(r'([+-]?\d+(?:\.\d+)?)', cleaned_response)
+#     if number_match:
+#         return number_match.group(1)
+#     return ""
+
+# def is_correct_answer(predicted, true_answer):
+#     """
+#     判断预测答案与真值是否一致（针对MATH500数据集）
+#     """
+#     if not predicted or not true_answer:
+#         return False
     
-    # 清理答案，移除多余空格
-    pred_clean = re.sub(r'\s+', ' ', str(predicted)).strip()
-    true_clean = re.sub(r'\s+', ' ', str(true_answer)).strip()
+#     # 清理答案，移除多余空格
+#     pred_clean = re.sub(r'\s+', ' ', str(predicted)).strip()
+#     true_clean = re.sub(r'\s+', ' ', str(true_answer)).strip()
     
-    # 直接比较（忽略空格和换行符）
-    if pred_clean.replace(' ', '') == true_clean.replace(' ', ''):
-        return True
+#     # 直接比较（忽略空格和换行符）
+#     if pred_clean.replace(' ', '') == true_clean.replace(' ', ''):
+#         return True
     
-    # 尝试数值比较（如果可能）
-    try:
-        pred_float = float(pred_clean.replace(',', ''))
-        true_float = float(true_clean.replace(',', ''))
-        return abs(pred_float - true_float) < 1e-6
-    except ValueError:
-        pass
+#     # 尝试数值比较（如果可能）
+#     try:
+#         pred_float = float(pred_clean.replace(',', ''))
+#         true_float = float(true_clean.replace(',', ''))
+#         return abs(pred_float - true_float) < 1e-6
+#     except ValueError:
+#         pass
     
-    return False
+#     return False
 
 
 def generate_with_transformers(model, tokenizer, prompt, device, temperature=0.7, max_tokens=512, num_return_sequences=1, output_hidden_states=False):
@@ -190,6 +261,102 @@ def generate_with_transformers(model, tokenizer, prompt, device, temperature=0.7
         generated_sequences.append(seq_data)
     return generated_sequences
 
+from typing import List, Dict
+
+def generate_with_transformers_batch(
+    model,
+    tokenizer,
+    prompts: List[str],
+    device,
+    temperature=0.7,
+    max_tokens=512,
+    num_return_sequences=1
+) -> List[List[Dict]]:
+    """
+    终极优化版：在生成的同时直接获取 Logits，无需二次前向传播。
+    """
+    model.eval()
+    # 1. Tokenizer 设置
+    tokenizer.padding_side = "left"
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    # 2. 批量编码
+    inputs = tokenizer(prompts, return_tensors="pt", padding=True, truncation=True).to(device)
+    input_ids = inputs["input_ids"]
+    attention_mask = inputs["attention_mask"]
+    batch_size, prompt_len = input_ids.shape
+
+    # 3. 配置生成参数，核心是开启 output_logits=True
+    generate_kwargs = {
+        "do_sample": True if temperature > 0 else False,
+        "temperature": temperature,
+        "max_new_tokens": max_tokens,
+        "num_return_sequences": num_return_sequences,
+        "pad_token_id": tokenizer.pad_token_id,
+        "eos_token_id": tokenizer.eos_token_id,
+        "attention_mask": attention_mask,
+        "return_dict_in_generate": True,
+        "output_logits": True, # 【核心优化点】直接请求返回 Logits
+    }
+    
+    # 4. 执行生成
+    # 这一步会比单纯生成稍微慢一点点（因为要回传 Logits），但远比跑两次快得多
+    with torch.no_grad():
+        outputs = model.generate(input_ids, **generate_kwargs)
+    
+    # outputs.sequences: [batch_size * num_return_sequences, full_seq_len]
+    all_sequences = outputs.sequences
+
+    # 5. 处理返回的 Logits
+    # outputs.logits 是一个 tuple，每个元素是每一步生成的 logits
+    # 我们需要把它们堆叠起来。
+    # 注意：为了节省显存，可以立即转到 CPU (如果显存足够大，可以去掉 .cpu())
+    # stack 后的形状: [batch_size * num_return_sequences, generated_seq_len, vocab_size]
+    if hasattr(outputs, "logits"):
+        # 堆叠 Logits。这步可能会占用较大显存，如果 OOM，请在这里加 .cpu()
+        # generated_logits = torch.stack(outputs.logits, dim=1).cpu() 
+        generated_logits = torch.stack(outputs.logits, dim=1)
+    else:
+        # 某些旧版本 transformers 可能叫 scores
+        generated_logits = torch.stack(outputs.scores, dim=1)
+
+    # 6. 重组结果
+    grouped_results = []
+    for b in range(batch_size):
+        candidates_for_this_prompt = []
+        for n in range(num_return_sequences):
+            flat_idx = b * num_return_sequences + n
+            sequence = all_sequences[flat_idx]
+            
+            # 提取仅回答部分的 Token IDs
+            response_ids = sequence[prompt_len:]
+            
+            # 获取对应的 Logits
+            # 注意：generated_logits 的长度可能比 response_ids 短（如果因 EOS 提前停止）
+            # 或者长（如果包含了某些特殊起始标记，虽然不常见）
+            # 通常它们是几乎一一对应的。我们需要确保长度匹配。
+            current_logits = generated_logits[flat_idx]
+            
+            # 裁剪 Logits 以匹配 response_ids 的实际长度 (去掉生成过程中的 padding)
+            actual_len = len(response_ids)
+            if current_logits.shape[0] > actual_len:
+                current_logits = current_logits[:actual_len]
+            elif current_logits.shape[0] < actual_len:
+                 # 这种情况极少发生，除非 prompt_len 计算有细微偏差
+                 print(f"Warning: Logits length ({current_logits.shape[0]}) < Tokens length ({actual_len})")
+                 response_ids = response_ids[:current_logits.shape[0]]
+
+            seq_data = {
+                "tokens": response_ids,       # 仅回答部分的 Tokens
+                "logits": current_logits,     # 仅回答部分的 Logits
+                "full_sequence": sequence,
+                "prompt_ids": input_ids[b]
+            }
+            candidates_for_this_prompt.append(seq_data)
+        grouped_results.append(candidates_for_this_prompt)
+
+    return grouped_results
 
 def calculate_step_confidence_with_self_certainty(prompt_ids, response_ids, logits, tokenizer, lambda_weight=0.5):
     """
@@ -297,7 +464,7 @@ def calculate_step_confidence_with_entropy(prompt_ids, response_ids, logits, tok
 
         if step_entropies:
             # 计算步骤的最小熵并归一化得到置信度（熵越低，置信度越高）
-            avg_entropy = min(step_entropies)
+            avg_entropy = np.mean(step_entropies)
             normalized_entropy = avg_entropy / max_entropy.item()
             step_confidence_entropy = 1.0 - normalized_entropy  # 熵置信度
             
@@ -465,120 +632,114 @@ def calculate_step_confidence_with_CoE_C(prompt_ids, response_ids, logits, hidde
 
 def calculate_step_self_evaluation(model, tokenizer, steps, question, device):
     """
-    对所有解题步骤进行自评
-    
-    Args:
-        model: 评估模型
-        tokenizer: 分词器
-        steps: 步骤列表
-        question: 原始问题
-        device: 计算设备
-        
-    Returns:
-        list: 每个步骤的自评分数列表
+    对所有解题步骤进行自评，返回每个步骤的自评分数列表 (0~1)
     """
     step_evaluations = []
     previous_steps = ""
-    
+
     for i, step_text in enumerate(steps):
         evaluation_score = evaluate_step_correctness(
-            model, tokenizer, step_text, question, device, previous_steps
+            model=model,
+            tokenizer=tokenizer,
+            step_text=step_text,
+            question=question,
+            device=device,
+            previous_steps=previous_steps
         )
         step_evaluations.append(evaluation_score)
         previous_steps += f"## Step {i+1}: {step_text}\n"
-    
+
     return step_evaluations
 
 
 def evaluate_step_correctness(model, tokenizer, step_text, question, device, previous_steps=""):
     """
-    使用模型评估单个解题步骤的正确性
-    
-    Args:
-        model: 评估用的模型
-        tokenizer: 分词器
-        step_text: 要评估的步骤文本
-        question: 原始问题
-        device: 计算设备
-        previous_steps: 之前的所有步骤
-        
-    Returns:
-        float: 步骤正确性评分 (0-1)
+    使用模型评估单个解题步骤的正确性，返回置信度(0~1)
     """
-    # 构造评估提示
+
+    # --- 构造提示词 ---
     prompt = f"""<|begin_of_text|>
-You are an expert AI assistant that evaluates the correctness of problem-solving steps.
+You are an expert math reasoning evaluator.
 
-Task: Evaluate whether the following problem-solving step is correct.
+Task: Evaluate whether the following step in solving a math problem is correct.
 
-Question: {question}
+Question:
+{question}
 
 Previous steps:
 {previous_steps}
 
-Current step to evaluate:
+Current step:
 {step_text}
 
-Is this step correct? 
-Options:
+Choose only one answer and output it directly:
 (A) Correct
 (B) Incorrect
 
-The answer is: """
+Answer with only A or B:
+"""
 
-    # 编码输入并生成响应
-    inputs = tokenizer(prompt, return_tensors="pt", truncation=True).to(device)
+    # --- 编码输入 ---
+    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=2048).to(device)
     input_ids = inputs["input_ids"]
-    
+
+    # --- 生成响应 ---
     generate_kwargs = {
         "do_sample": False,
         "max_new_tokens": 10,
-        "pad_token_id": tokenizer.pad_token_id if tokenizer.pad_token_id else tokenizer.eos_token_id,
+        "pad_token_id": tokenizer.pad_token_id or tokenizer.eos_token_id,
         "eos_token_id": tokenizer.eos_token_id,
         "return_dict_in_generate": True,
         "output_scores": True,
     }
-    
+
     with torch.no_grad():
         outputs = model.generate(input_ids, **generate_kwargs)
-    
-    # 解码生成的文本
+
     response_ids = outputs.sequences[0][len(input_ids[0]):]
     response_text = tokenizer.decode(response_ids, skip_special_tokens=True).strip()
 
-    # 从logits中计算置信度
-    if hasattr(outputs, 'scores') and len(outputs.scores) > 0:
-        def _check_eq(x, tokens):
-            x = re.sub(r'[\(\)\s]', ' ', x).strip()
-            return any(x == t for t in tokens) or any(x.lower() == t.lower() for t in tokens)
-        
-        w_tokens = ['B']  # 错误选项
-        r_tokens = ['A']  # 正确选项
-        
+    # --- 定义匹配函数 ---
+    def _check_eq(x, tokens):
+        """宽松匹配，例如 '(A)', 'A)', 'Correct' 都能识别"""
+        x = x.strip().lower()
+        for t in tokens:
+            if t.lower() in x:
+                return True
+        return False
+
+    r_tokens = ['A', '(A)', 'A)', 'Correct', 'correct']
+    w_tokens = ['B', '(B)', 'B)', 'Incorrect', 'incorrect']
+
+    # --- 计算概率置信度 ---
+    confidence = None
+
+    if hasattr(outputs, "scores") and len(outputs.scores) > 0:
         for i, token_logits in enumerate(outputs.scores):
             probs = torch.softmax(token_logits, dim=-1)
-            top_k = min(10, probs.size(-1))
+            top_k = min(20, probs.size(-1))
+
             top_probs, top_indices = torch.topk(probs, top_k, dim=-1)
-            
-            tlp = {}
-            tokens_at_position = []
+
+            # 映射token → 概率
+            token_probs = {}
             for j in range(top_k):
                 token_id = top_indices[0, j].item()
-                prob = top_probs[0, j].item()
                 token_text = tokenizer.decode([token_id]).strip()
-                tlp[token_text] = prob
-                tokens_at_position.append(token_text)
-            
-            generated_token_id = response_ids[i].item()
-            generated_token_text = tokenizer.decode([generated_token_id]).strip()
-            
-            if any(_check_eq(token, w_tokens + r_tokens) for token in tokens_at_position):
-                correct = sum(tlp.get(k, 0) for k in tlp if _check_eq(k, r_tokens))
-                wrong = sum(tlp.get(k, 0) for k in tlp if _check_eq(k, w_tokens))
-                confidence = correct
-                return confidence
-                
-    return 0.5
+                token_probs[token_text] = top_probs[0, j].item()
+
+            # 如果出现了选项token
+            if any(_check_eq(k, r_tokens + w_tokens) for k in token_probs):
+                p_A = sum(v for k, v in token_probs.items() if _check_eq(k, r_tokens))
+                p_B = sum(v for k, v in token_probs.items() if _check_eq(k, w_tokens))
+                confidence = p_A / (p_A + p_B + 1e-8)
+                break  # 找到第一个匹配位置就退出
+
+    # --- fallback ---
+    if confidence is None:
+        confidence = 0.5  # 中立
+
+    return float(np.clip(confidence, 0.0, 1.0))
 
 
 def compute_CoE_C(token_index, step_length, hidden_states):

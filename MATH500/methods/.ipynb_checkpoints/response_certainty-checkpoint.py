@@ -13,7 +13,8 @@ from tqdm import tqdm
 from utils.common import (
     extract_model_answer, 
     is_correct_answer,
-    generate_with_transformers
+    generate_with_transformers,
+    clean_latex_format
 )
 
 
@@ -69,11 +70,7 @@ def Response_Certainty_Selection(dataset, config, model, tokenizer, device,
         model_answer = ""
 
         # 提取真值答案（GSM8K样式 #### <ans>）
-        match = re.search(r'####\s*(.+)', data['answer'])
-        if match:
-            true_answer = match.group(1).strip()
-        else:
-            true_answer = data['answer'].strip()
+        true_answer = clean_latex_format(data['answer'])
 
         question = data['problem']
 
@@ -133,7 +130,7 @@ def Response_Certainty_Selection(dataset, config, model, tokenizer, device,
             """
         
         prompt = tokenizer.apply_chat_template(
-            [{"role": "user", "content": f"{pro_prompt}Q: {question}\n\nA:"}],
+            [{"role": "user", "content": f"Q: {question}\nLet's think step by step and output the step within ##Step 1: …… and the final answer within \\boxed{{}}\nA:"}],
             tokenize=False, add_generation_prompt=True
         )
 
