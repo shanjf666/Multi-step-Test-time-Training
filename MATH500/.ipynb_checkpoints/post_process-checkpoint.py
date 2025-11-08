@@ -42,8 +42,8 @@ def save_jsonl(data, output_path):
 
 # 主程序
 if __name__ == "__main__":
-    input_file = 'TTT_data/Self_Certainty_Steplevel_best_of_4_lambda_0.5_llama_1b_MATH500_1.json'
-    output_file = 'TTT_data/Bo4_Certainty_llama_2.jsonl'
+    input_file = 'TTT_data/Self_Certainty_Steplevel_best_of_4_second_0.3_llama_1b_MATH500_2.json'
+    output_file = 'TTT_data/Bo4_Certainty_llama_3.jsonl'
 
     # 加载数据
     data = load_json(input_file)

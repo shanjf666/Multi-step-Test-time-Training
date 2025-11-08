@@ -339,7 +339,7 @@ def Self_Certainty_Selection(dataset, config, model, tokenizer, device,
     # 写入JSON（每条为 {question, answer, gpt_response}）
     if save_results:
         os.makedirs("./TTT_data", exist_ok=True)
-        output_file = f"./TTT_data/Self_Certainty_Steplevel_best_of_{N}_second_{lambda_weight}_llama_1b_MATH500_3.json"
+        output_file = f"./TTT_data/Self_Certainty_Steplevel_best_of_{N}_second_{lambda_weight}_llama_1b_MATH500_2.json"
         with open(output_file, mode="w", encoding="utf-8") as file:
             json.dump({
                 "results": table,

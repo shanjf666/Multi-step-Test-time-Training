@@ -3,7 +3,7 @@ export OPENAI_API_KEY='sk-szeemiuaxtqymzkkpaezgadntxpajxwyhrzofzsodywqngqz'
 python main.py --method coe-c --model_path Qwen/Qwen2.5-Math-7B-Instruct --temperature 0.7 --max_tokens 1024 --lambda_weight 0.5 --n_repetitive_sampling 8 --subset_size 100 
 python main.py --method entropy --model_path Qwen/Qwen2.5-Math-1.5B-Instruct --temperature 0.1 --lambda_weight 0.5 --subset_size 100 --max_tokens 1024
 python main.py --method entropy --model_path /root/autodl-tmp/data/models/modelscope_cache/models/lijia321/llama_first --lambda_weight 0.5 --temperature 0.1 --max_tokens 1024 --n_repetitive_sampling 1
-python main.py --method self-certainty --model_path /root/autodl-tmp/data/models/modelscope_cache/models/lijia321/llama_second --lambda_weight 0.5 --temperature 0.3 --max_tokens 1024 --n_repetitive_sampling 1
+python main.py --method self-certainty --model_path /root/autodl-tmp/data/models/modelscope_cache/models/lijia321/llama_second --lambda_weight 0.5 --temperature 0.3 --max_tokens 3072 --n_repetitive_sampling 1
 """
 
 import os
