@@ -15,7 +15,140 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 import torch.nn.functional as F
 import numpy as np
-from utils.common import extract_model_answer, is_correct_answer, clean_latex_format
+
+def clean_latex_format(text: str) -> str:
+    if not text or not isinstance(text, str):
+        return ""
+
+    cleaned_text = text.strip()
+
+    cleaned_text = cleaned_text.replace("$", "").replace("\\$", "$")
+
+    latex_whitespaces = {
+        r'\\,': '', r'\\:': '', r'\\;': '', r'\\!': '',
+        r'\\enspace': '', r'\\quad': '', r'\\qquad': '',
+        r'\\hspace{[^}]*}': '', r'\\vspace{[^}]*}': '',
+        r'\\phantom{[^}]*}': '', r'\\hfill': '', r'\\space': '',
+        r'\\ ': '', r'\\mspace{[^}]*}': '', r'\\kern{[^}]*}': '',
+    }
+    for pattern, replacement in latex_whitespaces.items():
+        cleaned_text = re.sub(pattern, replacement, cleaned_text)
+
+    useless_cmds = [
+        r'\\left', r'\\right', r'\\big', r'\\Big', r'\\bigg', r'\\Bigg',
+        r'\\text\s*', r'\\mathrm', r'\\displaystyle', r'\\rm', r'\\it',
+        r'\\bf', r'\\cal', r'\\scriptstyle', r'\\scriptscriptstyle'
+    ]
+    for cmd in useless_cmds:
+        cleaned_text = re.sub(cmd, '', cleaned_text)
+
+    cleaned_text = cleaned_text.replace(r'\(', '(').replace(r'\)', ')')
+    cleaned_text = cleaned_text.replace(r'\[', '[').replace(r'\]', ']')
+    cleaned_text = cleaned_text.replace(r'\{', '{').replace(r'\}', '}')
+
+    symbol_replacements = {
+        r'\\pi': 'pi', r'\\theta': 'theta', r'\\sqrt': 'sqrt',
+        r'\\frac{([^}]*?)}({[^}]*?})': r'\1/\2',  # \frac{a}{b} -> a/b
+        r'\\times': '*', r'\\div': '/', r'\\infty': 'oo',
+        r'\\alpha': 'alpha', r'\\beta': 'beta', r'\\gamma': 'gamma',
+        r'\\delta': 'delta', r'\\sum': 'sum', r'\\int': 'integrate',
+        r'\\cdot': '*', r'\\pm': '+-', r'\\mp': '-+'
+    }
+    for pattern, replacement in symbol_replacements.items():
+        cleaned_text = re.sub(pattern, replacement, cleaned_text)
+
+    np_pattern = re.compile(r'[\x00-\x1f]')
+    cleaned_text = np_pattern.sub('', cleaned_text)
+
+    cleaned_text = re.sub(r'\(\s+', '(', cleaned_text)  # (  -> (
+    cleaned_text = re.sub(r'\s+\)', ')', cleaned_text)  #  ) -> )
+    cleaned_text = re.sub(r'\[\s+', '[', cleaned_text)  # [  -> [
+    cleaned_text = re.sub(r'\s+\]', ']', cleaned_text)  #  ] -> ]
+    cleaned_text = re.sub(r'\{\s+', '{', cleaned_text)  # {  -> {
+    cleaned_text = re.sub(r'\s+\}', '}', cleaned_text)  #  } -> }
+    # 移除逗号前后空格
+    cleaned_text = re.sub(r'\s*,\s*', ',', cleaned_text)
+    # 规范化多余空格
+    cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+
+    if not cleaned_text:
+        return ""
+
+    return cleaned_text
+
+def last_boxed_only_string(string):
+    idx = string.rfind("\\boxed")
+    if "\\boxed " in string:
+        return "\\boxed " + string.split("\\boxed ")[-1].split("$")[0]
+    if idx < 0:
+        idx = string.rfind("\\fbox")
+        if idx < 0:
+            return None
+
+    i = idx
+    right_brace_idx = None
+    num_left_braces_open = 0
+    while i < len(string):
+        if string[i] == "{":
+            num_left_braces_open += 1
+        if string[i] == "}":
+            num_left_braces_open -= 1
+            if num_left_braces_open == 0:
+                right_brace_idx = i
+                break
+        i += 1
+
+    retval = None if right_brace_idx is None else string[idx : right_brace_idx + 1]
+    return retval
+
+
+def remove_boxed(s):
+    if s is None:
+        return None
+    if "\\boxed " in s:
+        return s.replace("\\boxed ", "")
+    if s.startswith("\\boxed{") and s.endswith("}"):
+        return s[len("\\boxed{") : -1]
+    return s
+
+
+def strip_string(string):
+    if string is None:
+        return ""
+    string = string.replace("\n", "")
+    string = string.replace("\\!", "")
+    string = string.replace("\\\\", "\\")
+    string = string.replace("tfrac", "frac").replace("dfrac", "frac")
+    string = string.replace("\\left", "").replace("\\right", "")
+    string = string.replace("^{\\circ}", "").replace("^\\circ", "")
+    string = string.replace("\\$", "")
+    string = string.replace(" ", "")
+    if string == "0.5": string = "\\frac{1}{2}"
+    return string
+
+
+# ---------- 核心封装函数 ----------
+
+def extract_model_answer(response_text: str) -> str:
+    """
+    从模型输出中提取最终答案（去掉 \\boxed{}）。
+    如果没有找到 \\boxed，返回 None。
+    """
+    boxed_part = last_boxed_only_string(response_text)
+    if boxed_part is None:
+        return None
+    answer = remove_boxed(boxed_part)
+    return answer.strip()
+
+
+def is_correct_answer(predicted: str, true_answer: str) -> bool:
+    """
+    判断预测答案与标准答案是否等价（忽略LaTeX格式差异）。
+    """
+    if predicted is None or true_answer is None:
+        return False
+    return strip_string(predicted) == strip_string(true_answer)
+
 
 def parse_structured_steps(response_text: str, min_len: int = 5) -> List[Tuple[int, int, str]]:
     steps = []
