@@ -1,4 +1,3 @@
-```markdown|CODE_EDIT_BLOCK|c:\Users\13726\Desktop\科研\Multi-step Test-time Training\Multi-step-Test-time-Training\MATH500\README.md
 # MATH500 快速推理工具
 
 本项目提供了一个优化的推理流程，通过`infer.py`脚本可以快速地对MATH-500数据集进行测试时训练推理。
