@@ -206,9 +206,11 @@ def process_math_data(args):
     # --- 加载数据 ---
     ext = os.path.splitext(args.input_file)[1].lower()
     if ext == '.jsonl':
-        with open(args.input_file, 'r') as f: data = [json.loads(line) for line in f]
+        with open(args.input_file, 'r') as f:
+            data = [json.loads(line) for line in f]
     elif ext == '.json':
-        with open(args.input_file, 'r') as f: data = json.load(f)
+        with open(args.input_file, 'r') as f:
+            data = json.load(f)
     else:
         raise ValueError("Unsupported file format")
 
@@ -218,40 +220,41 @@ def process_math_data(args):
     dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
     llm = AutoModelForCausalLM.from_pretrained(args.model_dir, torch_dtype=dtype).to(device)
     tokenizer = AutoTokenizer.from_pretrained(args.model_dir, padding_side="left")
-    if tokenizer.pad_token is None: tokenizer.pad_token = tokenizer.eos_token
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
     llm.eval()
 
-    # --- alpha参数 ---
     alpha = args.alpha
-
-    output_file = args.output_file or os.path.splitext(args.input_file)[0] + "_best_scored.jsonl"
+    output_file = args.output_file or os.path.splitext(args.input_file)[0] + "_filtered.jsonl"
     processed_count = 0
     total_correct = 0
     actual_processed_count = 0
 
-    if os.path.exists(output_file):
-        with open(output_file, 'r') as f:
-            for _ in f:
-                processed_count += 1
-    print(f"Resuming from index {processed_count}, Output to: {output_file}")
-    f_out = open(output_file, 'a', encoding='utf-8')
+    # 阈值筛选
+    threshold_filter = 1
 
+    # 输出文件
+    f_out = open(output_file, 'w', encoding='utf-8')
+
+    # 保存用于阈值分析
+    stats_records = []
+
+    # =============================
+    # 主循环
+    # =============================
     pbar = tqdm.tqdm(enumerate(data), total=len(data), desc="Processing")
     for i, item in pbar:
-        if i < processed_count: continue
         problem_text = item.get("problem", "") or item.get("question", "")
         candidate_responses = item.get("responses", [])
-        true_solution = clean_latex_format(item.get("solution", "") or item.get("answer", ""))
+        true_solution = item.get("solution", "") or item.get("answer", "")
+
         if not candidate_responses:
-            f_out.write(json.dumps({"problem_idx": i, "error": "no_responses"}, ensure_ascii=False) + "\n")
             continue
 
         prompt_len_char = len(problem_text)
-        all_token_scores_cpu = []
-        all_neg_entropy_cpu = []
-        all_offsets_cpu = []
-        all_input_ids_cpu = []
+        all_token_scores_cpu, all_neg_entropy_cpu, all_offsets_cpu, all_input_ids_cpu = [], [], [], []
 
+        # --- 处理候选回答 ---
         num_responses = len(candidate_responses)
         for batch_start in range(0, num_responses, args.forward_batch_size):
             batch_end = min(batch_start + args.forward_batch_size, num_responses)
@@ -271,6 +274,7 @@ def process_math_data(args):
             del outputs, batch_certainty, batch_neg_entropy, inputs
             torch.cuda.empty_cache()
 
+        candidates_res = []
         best_score = -float('inf')
         best_res_data = None
 
@@ -281,20 +285,21 @@ def process_math_data(args):
             offsets = all_offsets_cpu[idx]
             input_ids = all_input_ids_cpu[idx]
 
+            # 找到回答起始token位置
             res_start_token_idx = 0
             for t_i in range(len(input_ids)):
-                if input_ids[t_i] == tokenizer.pad_token_id: continue
+                if input_ids[t_i] == tokenizer.pad_token_id:
+                    continue
                 if offsets[t_i][0] >= prompt_len_char:
                     res_start_token_idx = t_i
                     break
 
+            # 步骤划分
             steps = parse_structured_steps(response_text)
             step_scores_list = []
-            step_details = []
 
             for s_i, (c_start, c_end, s_text) in enumerate(steps):
-                abs_start = prompt_len_char + c_start
-                abs_end = prompt_len_char + c_end
+                abs_start, abs_end = prompt_len_char + c_start, prompt_len_char + c_end
                 step_token_mask = (offsets[:, 0] < abs_end) & (offsets[:, 1] > abs_start)
                 step_token_mask[:res_start_token_idx] = False
                 if step_token_mask.any():
@@ -302,48 +307,78 @@ def process_math_data(args):
                     avg_neg_entropy = neg_entropy[step_token_mask].mean().item()
                     step_score = alpha * avg_certainty + (1 - alpha) * avg_neg_entropy
                     step_scores_list.append(step_score)
-                    step_details.append({"step": s_i, "score": step_score, "text": s_text[:50]+"..."})
 
             final_score = np.mean(step_scores_list) if step_scores_list else -999.0
-            pred_ans = clean_latex_format(extract_model_answer(response_text))
-            is_correct = is_correct_answer(pred_ans, true_solution)
+            is_correct = is_correct_answer(clean_latex_format(extract_model_answer(response_text)), clean_latex_format(true_solution))
 
             res_data = {
                 "idx": idx,
                 "score": final_score,
-                "pred": pred_ans,
                 "correct": is_correct,
-                "steps": step_details,
                 "text": response_text
             }
+            candidates_res.append(res_data)
 
             if final_score > best_score:
                 best_score = final_score
                 best_res_data = res_data
 
+        # --- Sigmoid 归一化 ---
+        scores = np.array([c["score"] for c in candidates_res], dtype=float)
+        valid_mask = scores > -998.0
+        if valid_mask.any():
+            valid_scores = scores[valid_mask]
+            mean_val = valid_scores.mean()
+            std_val = valid_scores.std() if valid_scores.std() > 1e-8 else 1.0
+            k = 3.0  # 控制Sigmoid陡峭程度
+            norm_scores = 1 / (1 + np.exp(-k * (scores - mean_val) / std_val))
+            for k_i, c in enumerate(candidates_res):
+                c["score_norm"] = float(norm_scores[k_i])
+        else:
+            for c in candidates_res:
+                c["score_norm"] = 0.0
+
+        # 保存统计信息用于阈值分析
         if best_res_data:
             actual_processed_count += 1
-            if best_res_data["correct"]: total_correct += 1
-        if actual_processed_count > 0 and actual_processed_count % 5 == 0:
-            pbar.set_postfix({"Acc": f"{total_correct/actual_processed_count:.2%}"})
+            if best_res_data["correct"]:
+                total_correct += 1
+            best_norm = best_res_data["score_norm"]
+            stats_records.append({
+                "idx": i,
+                "score_norm": float(best_norm),
+                "correct": best_res_data["correct"]
+            })
 
-        best_answer_text = best_res_data["text"] if best_res_data else ""
-        record = {
-            "question": problem_text,
-            "answer": best_answer_text
-        }
-        f_out.write(json.dumps(record, ensure_ascii=False) + "\n")
-        f_out.flush()
+        # --- 筛选阈值 < 0.95 ---
+        if best_res_data and best_res_data["score_norm"] < threshold_filter:
+            record = {
+                "question": problem_text,
+                "answer": best_res_data["text"]
+            }
+            f_out.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+        if actual_processed_count > 0 and actual_processed_count % 5 == 0:
+            pbar.set_postfix({"Acc": f"{total_correct / actual_processed_count:.2%}"})
 
     f_out.close()
-    print("\n" + "="*30)
-    if actual_processed_count > 0:
-        print(f"Total Processed: {actual_processed_count}")
-        print(f"Total Correct:   {total_correct}")
-        print(f"Final Accuracy:  {total_correct/actual_processed_count:.2%}")
-    else:
-        print("No problems were processed.")
-    print("="*30)
+
+    # =============================
+    # 阈值分析（调试信息）
+    # =============================
+    thresholds = np.arange(0.5, 1.01, 0.01)
+    scores = np.array([r["score_norm"] for r in stats_records])
+    corrects = np.array([r["correct"] for r in stats_records])
+
+    print("\n" + "=" * 40)
+    print("阈值分析（基于归一化置信度）")
+    print("=" * 40)
+    for t in thresholds:
+        mask = scores >= t
+        n = mask.sum()
+        acc = corrects[mask].mean() if n > 0 else 0.0
+        print(f"阈值 {t:.2f} | 样本数 = {n:4d} | 准确率 = {acc:.2%}")
+    print("=" * 40)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

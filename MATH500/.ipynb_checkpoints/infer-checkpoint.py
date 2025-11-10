@@ -1,5 +1,8 @@
 """
 python infer.py --model_path meta-llama/Llama-3.2-1B-Instruct
+python infer.py --model_path Qwen/Qwen2.5-Math-1.5B
+python infer.py --model_path Qwen/Qwen2.5-Math-1.5B-Instruct --num_return_sequences 1
+python infer.py --model_path deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B
 """
 import argparse
 import subprocess
@@ -59,7 +62,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="统一调用 generate.py + evaluate.py 的一键推理管线")
     parser.add_argument("--model_path", type=str, required=True, help="模型路径（本地或HF模型名）")
     parser.add_argument("--num_return_sequences", type=int, default=4, help="每题生成候选数量")
-    parser.add_argument("--temperature", type=float, default=0.1, help="采样温度")
+    parser.add_argument("--temperature", type=float, default=0.5, help="采样温度")
     parser.add_argument("--max_tokens", type=int, default=1024, help="生成最大长度")
     parser.add_argument("--alpha", type=float, default=0.4, help="evaluate.py 的 self-certainty 加权系数")
     args = parser.parse_args()
