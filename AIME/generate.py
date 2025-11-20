@@ -58,7 +58,7 @@ def main(args):
     tokenizer = AutoTokenizer.from_pretrained(args.model_path, use_fast=False)
 
     # ----------------------------
-    # 创建 prompt 构造器  ← 修改
+    # 创建 prompt 构造器
     # ----------------------------
     build_prompt = get_prompt_builder(args.model_path, tokenizer)
 
@@ -66,6 +66,8 @@ def main(args):
     # 加载数据集
     # ----------------------------
     print(f"Loading dataset: {args.dataset_name} ({args.split})")
+    # 注意：HuggingFaceH4/aime_2024 的字段通常也是 'problem' 和 'solution'/'answer'，
+    # 所以下面的逻辑通常不需要改动，但要确保 split 正确。
     dataset = load_dataset(args.dataset_name, split=args.split)
 
     if args.max_samples is not None:
@@ -74,7 +76,7 @@ def main(args):
     print(f"Total problems to process: {len(dataset)}")
 
     # ----------------------------
-    # 构造 prompts（使用 build_prompt） ← 修改
+    # 构造 prompts（使用 build_prompt）
     # ----------------------------
     prompts = [build_prompt(item["problem"]) for item in dataset]
 
@@ -118,6 +120,7 @@ def main(args):
 
             responses = [out.text for out in request_output.outputs]
 
+            # 兼容不同数据集的 key，AIME 2024 通常也有 answer 或 solution 字段
             record = {
                 "problem": original_item["problem"],
                 "answer": original_item.get("answer", original_item.get("solution", None)),
@@ -131,6 +134,7 @@ def main(args):
     # ----------------------------
     print("=== Generation Finished ===")
     print(f"model_path           : {args.model_path}")
+    print(f"dataset              : {args.dataset_name}")
     print(f"max_tokens           : {args.max_tokens}")
     print(f"temperature          : {args.temperature}")
     print(f"num_return_sequences : {args.num_return_sequences}")
@@ -138,16 +142,22 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="使用 vLLM 高效生成 N 条候选回答（chat-template 版）")
-    parser.add_argument("--dataset_name", type=str, default="HuggingFaceH4/aime_2024")
-    parser.add_argument("--split", type=str, default="train")
+    parser = argparse.ArgumentParser(description="使用 vLLM 高效生成 N 条候选回答（适配 AIME 2024）")
+    
+    # --- 修改区域 Start ---
+    parser.add_argument("--dataset_name", type=str, default="HuggingFaceH4/aime_2024", help="默认数据集改为 AIME 2024")
+    # AIME 2024 在 HF 上通常只有 'train' split (因为它是一个很小的评测集)，如果是 'test' 可能会报错，这里改为 'train'
+    parser.add_argument("--split", type=str, default="train", help="AIME 2024 默认 split 通常为 train")
+    parser.add_argument("--output_file", type=str, default="aime2024_candidates.jsonl")
+    # --- 修改区域 End ---
+
     parser.add_argument("--model_path", type=str, required=True)
-    parser.add_argument("--output_file", type=str, default="aime_candidates.jsonl")
     parser.add_argument("--num_return_sequences", type=int, default=4)
     parser.add_argument("--temperature", type=float, default=0.7)
     parser.add_argument("--top_p", type=float, default=0.95)
-    parser.add_argument("--max_tokens", type=int, default=1024)
+    parser.add_argument("--max_tokens", type=int, default=2048) # 数学题建议稍微调大一点 token 限制
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--max_samples", type=int, default=None)
+    
     args = parser.parse_args()
     main(args)

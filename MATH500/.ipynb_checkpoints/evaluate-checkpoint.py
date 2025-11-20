@@ -206,10 +206,10 @@ def process_math_data(args):
     # --- 加载数据 ---
     ext = os.path.splitext(args.input_file)[1].lower()
     if ext == '.jsonl':
-        with open(args.input_file, 'r') as f:
+        with open(args.input_file, 'r', encoding='utf-8') as f:
             data = [json.loads(line) for line in f]
     elif ext == '.json':
-        with open(args.input_file, 'r') as f:
+        with open(args.input_file, 'r', encoding='utf-8') as f:
             data = json.load(f)
     else:
         raise ValueError("Unsupported file format")
@@ -225,16 +225,19 @@ def process_math_data(args):
     llm.eval()
 
     alpha = args.alpha
-    output_file = args.output_file or os.path.splitext(args.input_file)[0] + "_filtered.jsonl"
+
+    # ------------ 新文件名：基于 output_file 生成 ------------
+    if args.output_file:
+        score_file = os.path.splitext(args.output_file)[0] + ".jsonl"
+    else:
+        score_file = os.path.splitext(args.input_file)[0] + "_scores.jsonl"
+
+    f_score = open(score_file, 'w', encoding='utf-8')
+    # ----------------------------------------------------------
+
     processed_count = 0
     total_correct = 0
     actual_processed_count = 0
-
-    # 阈值筛选
-    threshold_filter = 1
-
-    # 输出文件
-    f_out = open(output_file, 'w', encoding='utf-8')
 
     # 保存用于阈值分析
     stats_records = []
@@ -243,125 +246,134 @@ def process_math_data(args):
     # 主循环
     # =============================
     pbar = tqdm.tqdm(enumerate(data), total=len(data), desc="Processing")
-    for i, item in pbar:
-        problem_text = item.get("problem", "") or item.get("question", "")
-        candidate_responses = item.get("responses", [])
-        true_solution = item.get("solution", "") or item.get("answer", "")
+    try:
+        for i, item in pbar:
+            problem_text = item.get("problem", "") or item.get("question", "")
+            candidate_responses = item.get("responses", [])
+            true_solution = item.get("solution", "") or item.get("answer", "")
 
-        if not candidate_responses:
-            continue
+            if not candidate_responses:
+                continue
 
-        prompt_len_char = len(problem_text)
-        all_token_scores_cpu, all_neg_entropy_cpu, all_offsets_cpu, all_input_ids_cpu = [], [], [], []
+            prompt_len_char = len(problem_text)
+            all_token_scores_cpu, all_neg_entropy_cpu, all_offsets_cpu, all_input_ids_cpu = [], [], [], []
 
-        # --- 处理候选回答 ---
-        num_responses = len(candidate_responses)
-        for batch_start in range(0, num_responses, args.forward_batch_size):
-            batch_end = min(batch_start + args.forward_batch_size, num_responses)
-            batch_responses = candidate_responses[batch_start:batch_end]
-            full_texts = [problem_text + r for r in batch_responses]
+            # --- 处理候选回答 ---
+            num_responses = len(candidate_responses)
+            for batch_start in range(0, num_responses, args.forward_batch_size):
+                batch_end = min(batch_start + args.forward_batch_size, num_responses)
+                batch_responses = candidate_responses[batch_start:batch_end]
+                full_texts = [problem_text + r for r in batch_responses]
 
-            inputs = tokenizer(full_texts, return_tensors="pt", padding=True, truncation=True, return_offsets_mapping=True).to(device)
-            with torch.amp.autocast(device_type='cuda', dtype=dtype):
-                outputs = llm(inputs.input_ids, attention_mask=inputs.attention_mask)
-                batch_certainty = compute_token_certainty(outputs.logits, inputs.input_ids, llm.config.vocab_size)
-                batch_neg_entropy = compute_token_neg_entropy(outputs.logits)
+                inputs = tokenizer(full_texts, return_tensors="pt", padding=True, truncation=True, return_offsets_mapping=True).to(device)
+                with torch.amp.autocast(device_type='cuda', dtype=dtype):
+                    outputs = llm(inputs.input_ids, attention_mask=inputs.attention_mask)
+                    batch_certainty = compute_token_certainty(outputs.logits, inputs.input_ids, llm.config.vocab_size)
+                    batch_neg_entropy = compute_token_neg_entropy(outputs.logits)
 
-            all_token_scores_cpu.extend([s.cpu() for s in batch_certainty])
-            all_neg_entropy_cpu.extend([s.cpu() for s in batch_neg_entropy])
-            all_offsets_cpu.extend([o.cpu() for o in inputs.offset_mapping])
-            all_input_ids_cpu.extend([ids.cpu() for ids in inputs.input_ids])
-            del outputs, batch_certainty, batch_neg_entropy, inputs
-            torch.cuda.empty_cache()
+                all_token_scores_cpu.extend([s.cpu() for s in batch_certainty])
+                all_neg_entropy_cpu.extend([s.cpu() for s in batch_neg_entropy])
+                all_offsets_cpu.extend([o.cpu() for o in inputs.offset_mapping])
+                all_input_ids_cpu.extend([ids.cpu() for ids in inputs.input_ids])
+                del outputs, batch_certainty, batch_neg_entropy, inputs
+                torch.cuda.empty_cache()
 
-        candidates_res = []
-        best_score = -float('inf')
-        best_res_data = None
+            candidates_res = []
+            best_score = -float('inf')
+            best_res_data = None
 
-        for idx in range(num_responses):
-            response_text = candidate_responses[idx]
-            token_scores = all_token_scores_cpu[idx]
-            neg_entropy = all_neg_entropy_cpu[idx]
-            offsets = all_offsets_cpu[idx]
-            input_ids = all_input_ids_cpu[idx]
+            for idx in range(num_responses):
+                response_text = candidate_responses[idx]
+                token_scores = all_token_scores_cpu[idx]
+                neg_entropy = all_neg_entropy_cpu[idx]
+                offsets = all_offsets_cpu[idx]
+                input_ids = all_input_ids_cpu[idx]
 
-            # 找到回答起始token位置
-            res_start_token_idx = 0
-            for t_i in range(len(input_ids)):
-                if input_ids[t_i] == tokenizer.pad_token_id:
-                    continue
-                if offsets[t_i][0] >= prompt_len_char:
-                    res_start_token_idx = t_i
-                    break
+                # 找到回答起始token位置
+                res_start_token_idx = 0
+                for t_i in range(len(input_ids)):
+                    if input_ids[t_i] == tokenizer.pad_token_id:
+                        continue
+                    if offsets[t_i][0] >= prompt_len_char:
+                        res_start_token_idx = t_i
+                        break
 
-            # 步骤划分
-            steps = parse_structured_steps(response_text)
-            step_scores_list = []
+                # 步骤划分
+                steps = parse_structured_steps(response_text)
+                step_scores_list = []
 
-            for s_i, (c_start, c_end, s_text) in enumerate(steps):
-                abs_start, abs_end = prompt_len_char + c_start, prompt_len_char + c_end
-                step_token_mask = (offsets[:, 0] < abs_end) & (offsets[:, 1] > abs_start)
-                step_token_mask[:res_start_token_idx] = False
-                if step_token_mask.any():
-                    avg_certainty = token_scores[step_token_mask].mean().item()
-                    avg_neg_entropy = neg_entropy[step_token_mask].mean().item()
-                    step_score = alpha * avg_certainty + (1 - alpha) * avg_neg_entropy
-                    step_scores_list.append(step_score)
+                for s_i, (c_start, c_end, s_text) in enumerate(steps):
+                    abs_start, abs_end = prompt_len_char + c_start, prompt_len_char + c_end
+                    step_token_mask = (offsets[:, 0] < abs_end) & (offsets[:, 1] > abs_start)
+                    step_token_mask[:res_start_token_idx] = False
+                    if step_token_mask.any():
+                        avg_certainty = token_scores[step_token_mask].mean().item()
+                        avg_neg_entropy = neg_entropy[step_token_mask].mean().item()
+                        step_score = alpha * avg_certainty + (1 - alpha) * avg_neg_entropy
+                        step_scores_list.append(step_score)
 
-            final_score = np.mean(step_scores_list) if step_scores_list else -999.0
-            is_correct = is_correct_answer(clean_latex_format(extract_model_answer(response_text)), clean_latex_format(true_solution))
+                final_score = np.mean(step_scores_list) if step_scores_list else -999.0
+                is_correct = is_correct_answer(clean_latex_format(extract_model_answer(response_text)),
+                                               clean_latex_format(true_solution))
 
-            res_data = {
-                "idx": idx,
-                "score": final_score,
-                "correct": is_correct,
-                "text": response_text
-            }
-            candidates_res.append(res_data)
+                res_data = {
+                    "idx": idx,
+                    "score": final_score,
+                    "correct": is_correct,
+                    "text": response_text
+                }
+                candidates_res.append(res_data)
 
-            if final_score > best_score:
-                best_score = final_score
-                best_res_data = res_data
+                if final_score > best_score:
+                    best_score = final_score
+                    best_res_data = res_data
 
-        # --- Sigmoid 归一化 ---
-        scores = np.array([c["score"] for c in candidates_res], dtype=float)
-        valid_mask = scores > -998.0
-        if valid_mask.any():
-            valid_scores = scores[valid_mask]
-            mean_val = valid_scores.mean()
-            std_val = valid_scores.std() if valid_scores.std() > 1e-8 else 1.0
-            k = 3.0  # 控制Sigmoid陡峭程度
-            norm_scores = 1 / (1 + np.exp(-k * (scores - mean_val) / std_val))
-            for k_i, c in enumerate(candidates_res):
-                c["score_norm"] = float(norm_scores[k_i])
-        else:
-            for c in candidates_res:
-                c["score_norm"] = 0.0
+            # --- Sigmoid 归一化 ---
+            scores = np.array([c["score"] for c in candidates_res], dtype=float)
+            valid_mask = scores > -998.0
+            if valid_mask.any():
+                valid_scores = scores[valid_mask]
+                mean_val = valid_scores.mean()
+                std_val = valid_scores.std() if valid_scores.std() > 1e-8 else 1.0
+                k = 3.0
+                norm_scores = 1 / (1 + np.exp(-k * (scores - mean_val) / std_val))
+                for k_i, c in enumerate(candidates_res):
+                    c["score_norm"] = float(norm_scores[k_i])
+            else:
+                for c in candidates_res:
+                    c["score_norm"] = 0.0
 
-        # 保存统计信息用于阈值分析
-        if best_res_data:
-            actual_processed_count += 1
-            if best_res_data["correct"]:
-                total_correct += 1
-            best_norm = best_res_data["score_norm"]
-            stats_records.append({
-                "idx": i,
-                "score_norm": float(best_norm),
-                "correct": best_res_data["correct"]
-            })
+            # 找到最佳回答（带归一化得分）
+            if best_res_data:
+                actual_processed_count += 1
+                if best_res_data["correct"]:
+                    total_correct += 1
 
-        # --- 筛选阈值 < 0.95 ---
-        if best_res_data and best_res_data["score_norm"] < threshold_filter:
-            record = {
-                "question": problem_text,
-                "answer": best_res_data["text"]
-            }
-            f_out.write(json.dumps(record, ensure_ascii=False) + "\n")
+                best_res_data = next((r for r in candidates_res if r["idx"] == best_res_data["idx"]), best_res_data)
+                best_norm = best_res_data.get("score_norm", 0.0)
 
-        if actual_processed_count > 0 and actual_processed_count % 5 == 0:
-            pbar.set_postfix({"Acc": f"{total_correct / actual_processed_count:.2%}"})
+                stats_records.append({
+                    "idx": i,
+                    "score_norm": float(best_norm),
+                    "correct": best_res_data["correct"]
+                })
 
-    f_out.close()
+                # ----------- 写入新的 score 文件（唯一输出） -----------
+                f_score.write(json.dumps({
+                    "idx": i,
+                    "question": problem_text,
+                    "best_answer": best_res_data["text"],
+                    "score_norm": float(best_norm),
+                    "correct": best_res_data["correct"]
+                }, ensure_ascii=False) + "\n")
+                # -------------------------------------------------------
+
+            if actual_processed_count > 0 and actual_processed_count % 5 == 0:
+                pbar.set_postfix({"Acc": f"{total_correct / actual_processed_count:.2%}"})
+
+    finally:
+        f_score.close()
+        print(f"\nScores saved to {score_file}")
 
     # =============================
     # 阈值分析（调试信息）
@@ -374,11 +386,12 @@ def process_math_data(args):
     print("阈值分析（基于归一化置信度）")
     print("=" * 40)
     for t in thresholds:
-        mask = scores >= t
+        mask = scores <= t
         n = mask.sum()
         acc = corrects[mask].mean() if n > 0 else 0.0
         print(f"阈值 {t:.2f} | 样本数 = {n:4d} | 准确率 = {acc:.2%}")
     print("=" * 40)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -389,3 +402,4 @@ if __name__ == "__main__":
     parser.add_argument("--alpha", type=float, default=0.4, help="步骤得分加权系数 alpha (self-certainty权重)")
     args = parser.parse_args()
     process_math_data(args)
+
