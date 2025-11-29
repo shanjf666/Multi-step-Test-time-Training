@@ -403,3 +403,74 @@ if __name__ == "__main__":
     args = parser.parse_args()
     process_math_data(args)
 
+{
+  "problem": "Calculate 2+2.",
+  "answer": "4",
+
+  "responses": [
+    {
+      "response_id": 0,
+      "raw_text": "The answer is 4.",
+      "extracted_answer": "4",
+      "score": 1.0,
+      "avg_logprob": ,
+      "min_logprob": ,
+      "avg_logprob": ,
+      "min_logprob": ,
+      "max_logprob": ,
+      "std_logprob": ,
+      "perplexity": ,
+      "avg_entropy": ,
+      "min_entropy": ,
+      "max_entropy": ,
+      "std_entropy": ,
+      "avg_certainty": ,
+      "min_certainty": ,
+      "max_certainty": ,
+      "std_certainty": ,
+      "steps": {
+        "step_entropy": 0.25,
+        "step_certainty": 4.0,
+        "reasoning_trace": [
+          "Parsed question.",
+          "Recognized arithmetic.",
+          "Calculated 2+2=4."
+        ]
+      }
+    },
+    {
+      "response_id": 1,
+      "raw_text": "2+2 equals 4.",
+      "extracted_answer": "4",
+      "score": 1.0,
+      "avg_logprob": ,
+      "min_logprob": ,
+      "avg_logprob": ,
+      "min_logprob": ,
+      "max_logprob": ,
+      "std_logprob": ,
+      "perplexity": ,
+      "avg_entropy": ,
+      "min_entropy": ,
+      "max_entropy": ,
+      "std_entropy": ,
+      "avg_certainty": ,
+      "min_certainty": ,
+      "max_certainty": ,
+      "std_certainty": ,
+      "steps": {
+        "entropy": 0.22,
+        "self-certainty": 3.0,
+        "reasoning_trace": ["...", "..."]
+      }
+    }
+  ],
+
+  "scoring": {
+    "self_consistency_answer": "4",
+    "self_consistency_score": 0.8,
+  }
+}
+
+
+

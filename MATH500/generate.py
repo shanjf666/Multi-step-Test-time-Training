@@ -21,7 +21,7 @@ def get_prompt_builder(model_path, tokenizer):
 
     # 针对指令微调 (Instruct) 模型或 Llama 系列
     # 使用 tokenizer 自带的 apply_chat_template 功能
-    if "instruct" in name or "llama" in name:
+    if "instruct" in name or "llama" in name or"deepseek" in name:
         def build_prompt(problem: str):
             messages = [
                 {"role": "user", "content": f"Q: {problem}\nLet's think step by step and output the final answer within \\boxed{{}}\nA:"}
@@ -34,10 +34,10 @@ def get_prompt_builder(model_path, tokenizer):
         return build_prompt
 
     # 针对 DeepSeek 系列 (Base 模型处理)
-    if "deepseek" in name:
-        def build_prompt(problem: str):
-            return f"Q: {problem}\nLet's think step by step and output the final answer within \\boxed{{}}\nA:"
-        return build_prompt
+    # if "deepseek" in name:
+    #     def build_prompt(problem: str):
+    #         return f"Q: {problem}\nLet's think step by step and output the final answer within \\boxed{{}}\nA:"
+    #     return build_prompt
 
     # 针对 Qwen 系列 (Base 模型处理)
     if "qwen" in name:
@@ -61,7 +61,7 @@ def main(args):
     # ----------------------------
     print(f"Loading tokenizer: {args.model_path}")
     # 注意：某些旧模型可能需要 use_fast=False，新模型通常 use_fast=True 更快
-    tokenizer = AutoTokenizer.from_pretrained(args.model_path, use_fast=False, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_path, use_fast=True, trust_remote_code=True)
 
     # ----------------------------
     # 2. 获取 Prompt 构造函数

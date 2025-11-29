@@ -402,4 +402,3 @@ if __name__ == "__main__":
     parser.add_argument("--alpha", type=float, default=0.4, help="步骤得分加权系数 alpha (self-certainty权重)")
     args = parser.parse_args()
     process_math_data(args)
-

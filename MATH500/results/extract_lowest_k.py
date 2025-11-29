@@ -2,6 +2,9 @@
 python extract_lowest_k.py --input math500_best_Qwen2.5-Math-1.5B_20251118_223630.jsonl --k 1
 python extract_lowest_k.py --input math500_best_Qwen2.5-Math-1.5B_20251118_223630.jsonl --k 2
 python extract_lowest_k.py --input math500_best_Qwen2.5-Math-1.5B_20251118_223630.jsonl --k 4
+python extract_lowest_k.py --input math500_best_Llama-3.2-1B-Instruct_20251121_205353.jsonl --k 1
+python extract_lowest_k.py --input math500_best_Llama-3.2-1B-Instruct_20251121_205353.jsonl --k 2
+python extract_lowest_k.py --input math500_best_Llama-3.2-1B-Instruct_20251121_205353.jsonl --k 4
 """
 import json
 import argparse
