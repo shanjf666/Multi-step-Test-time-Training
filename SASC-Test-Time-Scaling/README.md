@@ -1,4 +1,4 @@
-# SASC: Stability-Aware Self-Consistency Evaluation Framework
+# SASC: Stability-Aware Self-Consistency Test Time Scaling
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)]()
 [![vLLM](https://img.shields.io/badge/Inference-vLLM-green)]()
@@ -26,6 +26,8 @@
     * `Baseline: Consistency (SC)`: 标准众数投票。
     * `Weighted: Z-Std-Entropy`: 基于整体熵的加权。
     * `Hybrid: Double Stability`: **(SASC)** 结合整体熵与步骤稳定性的双重加权。
+    * `Combo`: 先过滤掉高熵路径，再进行加权。
+
 
 ## 🚀 快速开始 (Quick Start)
 
@@ -86,6 +88,7 @@ python run_evaluation.py --input_file results/gsm8k_output.jsonl
 | **Consistency (SC)** | Self-Consistency (众数投票) | $\text{argmax} \sum \mathbb{I}(y_i = c)$ |
 | **Z-Std-Entropy** | 基于熵的标准差加权。熵越低，权重越大。 | $w_i = \exp(-Z_{\text{entropy}})$ |
 | **Double Stability** | **(SASC)** 结合整体熵与步骤间熵的稳定性。 | $w_i = \exp(-Z_{\text{entropy}} - Z_{\text{step\_std}})$ |
+| **Combo** | 先过滤掉熵最高的 K% (FilterTopK)，再进行加权。 | $\text{Filter}(Z_{\text{entropy}} > \tau) \rightarrow \text{Weighted}$ |
 
 ## 📊 结果示例 (Sample Output)
 
@@ -97,25 +100,14 @@ python run_evaluation.py --input_file results/gsm8k_output.jsonl
 ================================================================================
 Strategy                            | Accuracy   | vs SC     
 --------------------------------------------------------------------------------
-Hybrid: Double Stability            | 68.50%     | +2.10% 👑
+Combo: FilterTopK + W-StdTopK       | 69.10%     | +2.70% 👑
+Hybrid: Double Stability            | 68.50%     | +2.10% 
 Weighted: Z-Std-Entropy             | 67.80%     | +1.40% 
 Baseline: Consistency (SC)          | 66.40%     | +0.00% 
 Baseline: Pass@1                    | 52.10%     | -14.30%
 ================================================================================
 ```
 
-## 📝 引用 (Citation)
-
-如果您在研究中使用了此代码，请引用：
-
-```bibtex
-@misc{sasc2025,
-  title={SASC: Stability-Aware Self-Consistency for Chain-of-Thought},
-  author={Author Name},
-  year={2025},
-  howpublished={\url{[https://github.com/your-username/sasc-eval](https://github.com/your-username/sasc-eval)}}
-}
-```
 
 ## 📄 License
 

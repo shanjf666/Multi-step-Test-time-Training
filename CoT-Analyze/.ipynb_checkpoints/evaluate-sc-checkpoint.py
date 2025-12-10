@@ -206,20 +206,20 @@ def evaluate_file(input_file, top_k, output_hard_file):
         print("-" * 30)
 
     # 保存到文件
-    # if output_hard_file:
-    #     print(f"\nSaving top {top_k} hardest problems to: {output_hard_file}")
-    #     with open(output_hard_file, "w", encoding="utf-8") as f_out:
-    #         for rec in hardest_problems:
-    #             # --- 修改处：按要求字段名保存 ---
-    #             out_record = {
-    #                 "idx": rec["idx"],
-    #                 "question": rec["problem"],
-    #                 "best_answer": rec["pred"],
-    #                 "score_norm": rec["sc_score"],
-    #                 "correct": rec["is_correct"]
-    #             }
-    #             f_out.write(json.dumps(out_record, ensure_ascii=False) + "\n")
-    #     print("Save completed.")
+    if output_hard_file:
+        print(f"\nSaving top {top_k} hardest problems to: {output_hard_file}")
+        with open(output_hard_file, "w", encoding="utf-8") as f_out:
+            for rec in hardest_problems:
+                # --- 修改处：按要求字段名保存 ---
+                out_record = {
+                    "idx": rec["idx"],
+                    "question": rec["problem"],
+                    "best_answer": rec["pred"],
+                    "score_norm": rec["sc_score"],
+                    "correct": rec["is_correct"]
+                }
+                f_out.write(json.dumps(out_record, ensure_ascii=False) + "\n")
+        print("Save completed.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate math predictions and save low-confidence examples.")
